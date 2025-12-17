@@ -39,7 +39,7 @@ async function searchSpotifyTrack(token, artist, title) {
   return null;
 }
 
-// Funzione per cercare brani di un artista con mood simile
+// Funzione per cercare brani di un artista
 async function searchArtistTopTracks(token, artist) {
   const artistQuery = encodeURIComponent(artist);
   const artistResponse = await fetch(
@@ -82,89 +82,99 @@ export async function POST(request) {
       return Response.json({ error: 'Prompt mancante' }, { status: 400 });
     }
 
-    const systemPrompt = `Sei un musicologo con un'anima da poeta e una profonda comprensione della psicologia dei luoghi. Non sei un algoritmo - sei qualcuno che ha viaggiato, vissuto, sentito il battito di ogni città.
+    const systemPrompt = `Sei un esperto musicale con una conoscenza profonda dell'anima musicale di ogni città del mondo.
 
-IL TUO APPROCCIO:
-Quando qualcuno ti descrive un momento, tu non pensi "quali tag applicare". Tu SENTI quel momento. Ti chiedi:
-- Che storia ha questo luogo? Che cicatrici porta? Che bellezza nasconde?
-- Come SI SENTE vivere lì? Non da turista, ma da chi ci abita
-- Qual è il NON DETTO di questo posto? La sua anima segreta?
-- Che musica ascolterebbe qualcuno che CAPISCE davvero questo luogo?
+IL TUO METODO - DUE STEP OBBLIGATORI:
 
-ESEMPI DI COME PENSARE:
+STEP 1: DEFINISCI L'ANIMA MUSICALE DEL LUOGO
+Prima di tutto, FERMATI e chiediti: "Quali sono i 3 generi musicali che rappresentano l'ANIMA di questo luogo?"
+Non generi generici (rock, pop, jazz) - generi SPECIFICI con artisti di riferimento che incarnano quel posto.
 
-CRACOVIA non è "Polonia, freddo, est Europa". Cracovia è:
-- Una città che ha visto l'orrore e ha scelto la bellezza
-- Bohémien, intellettuale, con locali jazz nascosti in cantine medievali
-- La malinconia slava che non è tristezza ma PROFONDITÀ
-- Il suono di Myslovitz, Czesław Niemen, ma anche Chopin nei parchi
-- L'inverno polacco non è deprimente, è contemplativo - la neve che attutisce tutto
-- Una città studentesca con energia, non una cartolina grigia
+ESEMPI:
 
-NAPOLI non è "pizza, mandolino, sole". Napoli è:
-- Il blues prima che esistesse il blues - gente che canta il dolore per sopravvivere
-- Pino Daniele che suona funk con l'anima del vicolo
-- Il caos che è vita, non disordine
-- Maradona come religione - quindi anche musica argentina
-- La bellezza decadente che è più vera della perfezione
+NAPOLI:
+1. Blues napoletano (Pino Daniele, James Senese, Napoli Centrale)
+2. Nu jazz/funk mediterraneo (Nu Genea, Fatima)
+3. Cantautorato italiano intenso (Lucio Dalla, Edoardo Bennato)
 
-BERLINO non è "techno, muro, club". Berlino è:
-- La città che si reinventa ogni 20 anni
-- Bowie e Iggy Pop che scappano dai demoni
-- Il suono industriale che è nato dalla storia industriale
-- Ma anche il Kreuzberg turco, il jazz degli anni 20
-- La libertà che è solitudine scelta
+CRACOVIA:
+1. Jazz europeo moderno (Esbjörn Svensson Trio, Marcin Wasilewski Trio, Tomasz Stańko)
+2. Musica classica contemporanea polacca (Górecki, Preisner, Penderecki)
+3. Elettronica/trip-hop polacca (Skalpel, Leszek Możdżer)
 
-TOKYO non è "J-pop, anime, neon". Tokyo è:
-- 14 milioni di persone sole insieme
-- Il silenzio assordante della metro alle 7 di mattina
-- City pop degli anni 80 che parla di malinconia urbana
-- Il jazz kissaten dove il tempo si ferma
-- La precisione che nasconde il caos interiore
+BERLINO:
+1. Elettronica d'autore (Moderat, Apparat, Nils Frahm)
+2. Art rock/krautrock (Can, Tangerine Dream, Neu!)
+3. Cantautorato tedesco (Rio Reiser, Element of Crime)
 
-ANALIZZA COSÌ:
-1. LUOGO: Non la geografia, ma l'ANIMA del posto. La sua storia emotiva.
-2. MOMENTO: Non solo l'ora, ma cosa SIGNIFICA quel momento lì. La mattina a Mumbai non è la mattina a Stoccolma.
-3. MOVIMENTO: Guidare di notte è un rituale. Camminare sotto la pioggia è un altro. Ogni movimento ha il suo respiro.
-4. COMPAGNIA: Solo è diverso da "con qualcuno". Con chi? Che energia c'è tra voi?
-5. STAGIONE: L'inverno in Russia non è l'inverno in Sicilia. Ogni freddo ha il suo carattere.
+TOKYO:
+1. City pop giapponese (Tatsuro Yamashita, Mariya Takeuchi)
+2. Jazz giapponese (Ryo Fukui, Toshiko Akiyoshi)
+3. Ambient/elettronica giapponese (Ryuichi Sakamoto, Hiroshi Yoshimura)
 
-Rispondi SOLO con un JSON valido:
+ROMA:
+1. Cantautorato romano (Antonello Venditti, Francesco De Gregori)
+2. Nu soul/elettronica italiana (Cosmo, Mace, Venerus)
+3. Colonne sonore italiane (Ennio Morricone, Piero Piccioni)
+
+BUENOS AIRES:
+1. Tango nuevo (Astor Piazzolla, Gotan Project)
+2. Rock argentino (Charly García, Fito Páez, Soda Stereo)
+3. Folklore argentino moderno (Mercedes Sosa, Gustavo Santaolalla)
+
+STEP 2: SCEGLI I BRANI SOLO DA QUEI GENERI
+Una volta definiti i 3 generi, scegli i brani ESCLUSIVAMENTE da quegli ambiti.
+I brani devono esistere su Spotify con titoli e artisti ESATTI.
+
+CONSIDERA ANCHE:
+- Il MOMENTO (mattina, sera, notte)
+- L'ATTIVITÀ (guidare, camminare, seduto)
+- La STAGIONE (l'inverno a Cracovia è diverso dall'inverno a Napoli)
+- La COMPAGNIA (solo, con qualcuno)
+
+Rispondi SOLO con JSON valido:
 {
+  "cityGenres": {
+    "genre1": {
+      "name": "nome del genere specifico",
+      "artists": ["artista1", "artista2", "artista3"]
+    },
+    "genre2": {
+      "name": "nome del genere specifico",
+      "artists": ["artista1", "artista2", "artista3"]
+    },
+    "genre3": {
+      "name": "nome del genere specifico",
+      "artists": ["artista1", "artista2", "artista3"]
+    }
+  },
   "interpretation": {
-    "mood": "descrizione poetica del mood (max 8 parole)",
-    "energy": "tipo di energia, non solo alta/bassa (max 6 parole)", 
-    "texture": "texture sonora evocativa (max 6 parole)",
-    "setting": "l'essenza del contesto (max 6 parole)",
-    "movement": "il ritmo del momento (max 5 parole)"
+    "mood": "il feeling del momento (max 8 parole)",
+    "energy": "che tipo di energia (max 6 parole)",
+    "texture": "come suona (max 6 parole)",
+    "setting": "dove sei (max 6 parole)",
+    "movement": "cosa fai (max 5 parole)"
   },
   "parameters": {
-    "valence": numero da 0.0 a 1.0,
-    "energy": numero da 0.0 a 1.0,
-    "tempo_min": numero BPM minimo,
-    "tempo_max": numero BPM massimo,
-    "tempo_target": numero BPM ideale,
-    "acousticness": numero da 0.0 a 1.0,
-    "instrumentalness": numero da 0.0 a 1.0,
-    "mode": "major" o "minor" o "mixed",
-    "danceability": numero da 0.0 a 1.0
+    "valence": numero 0.0-1.0,
+    "energy": numero 0.0-1.0,
+    "tempo_min": BPM minimo,
+    "tempo_max": BPM massimo,
+    "tempo_target": BPM ideale,
+    "acousticness": numero 0.0-1.0,
+    "instrumentalness": numero 0.0-1.0,
+    "mode": "major"/"minor"/"mixed",
+    "danceability": numero 0.0-1.0
   },
-  "genres": ["genere1", "genere2", "genere3", "genere4"],
+  "genres": ["genere1", "genere2", "genere3"],
   "suggestedTracks": [
     {
       "title": "titolo ESATTO Spotify",
       "artist": "artista ESATTO Spotify",
-      "reason": "perché QUESTO brano per QUESTO momento (max 10 parole)"
+      "reason": "perché questo brano (max 10 parole)"
     }
-  ] (esattamente 30 brani)
-}
-
-PER I BRANI:
-- Pensa: "Cosa metterebbe qualcuno che VIVE questo momento, non un turista?"
-- Includi artisti LOCALI che chi abita lì conosce e ama
-- Mescola: classici intoccabili + gemme che solo chi capisce il posto conosce
-- Mai ovvio. Mai banale. Ma sempre VERO.
-- I brani devono essere REALI e FAMOSI su Spotify - niente oscurità`;
+  ] (30 brani - SOLO da artisti dei 3 generi definiti sopra)
+}`;
 
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -180,7 +190,7 @@ PER I BRANI:
         messages: [
           {
             role: 'user',
-            content: `"${prompt}"\n\nSenti questo momento. Non analizzarlo - VIVILO. Poi dammi la musica che lo accompagna. Solo JSON.`
+            content: `"${prompt}"\n\nSTEP 1: Definisci i 3 generi che rappresentano l'anima musicale di questo luogo.\nSTEP 2: Scegli i brani SOLO da quei generi.\n\nSolo JSON.`
           }
         ]
       })
@@ -225,13 +235,14 @@ PER I BRANI:
         if (topTrack) {
           const isDuplicate = verifiedTracks.some(t => t.spotifyId === topTrack.spotifyId);
           if (!isDuplicate) {
-            verifiedTracks.push({ ...topTrack, reason: `Brano iconico di ${artist}` });
+            verifiedTracks.push({ ...topTrack, reason: `Brano di ${artist}` });
           }
         }
       }
     }
 
     return Response.json({
+      cityGenres: analysis.cityGenres,
       interpretation: analysis.interpretation,
       parameters: analysis.parameters,
       genres: analysis.genres,
