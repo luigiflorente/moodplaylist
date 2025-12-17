@@ -84,11 +84,32 @@ export async function POST(request) {
 
     const systemPrompt = `Sei un esperto musicale con una conoscenza profonda dell'anima musicale di ogni città del mondo.
 
-IL TUO METODO - DUE STEP OBBLIGATORI:
+IL TUO METODO - TRE STEP OBBLIGATORI:
 
-STEP 1: DEFINISCI L'ANIMA MUSICALE DEL LUOGO
-Prima di tutto, FERMATI e chiediti: "Quali sono i 3 generi musicali che rappresentano l'ANIMA di questo luogo?"
-Non generi generici (rock, pop, jazz) - generi SPECIFICI con artisti di riferimento che incarnano quel posto.
+STEP 1: DEFINISCI IL MOOD DELLA CITTÀ
+Prima di tutto chiediti: "Qual è l'ATMOSFERA EMOTIVA di questa città?"
+- È allegra o malinconica?
+- Caotica o riflessiva?
+- Solare o cupa?
+- Energica o contemplativa?
+- Leggera o pesante di storia?
+
+ESEMPI:
+
+NAPOLI: Caotica, vitale, dolente ma mai rassegnata. Energia di strada, passione, sole anche nella tristezza.
+
+CRACOVIA: Malinconica, riflessiva, profonda. Non triste ma contemplativa. Elegante nel dolore. Pesante di storia ma con dignità.
+
+BERLINO: Fredda, libera, sperimentale. Cicatrici visibili. Rinascita continua. Notturna.
+
+TOKYO: Ordinata fuori, caotica dentro. Solitudine collettiva. Malinconia urbana mascherata da efficienza.
+
+ROMA: Decadente, ironica, eterna. Bellezza sfacciata. Cinismo affettuoso.
+
+BUENOS AIRES: Nostalgica, passionale, drammatica. Tango nell'anima. Malinconia come identità.
+
+STEP 2: DEFINISCI I 3 GENERI MUSICALI DEL LUOGO
+Generi SPECIFICI con artisti di riferimento che incarnano quel posto.
 
 ESEMPI:
 
@@ -122,9 +143,14 @@ BUENOS AIRES:
 2. Rock argentino (Charly García, Fito Páez, Soda Stereo)
 3. Folklore argentino moderno (Mercedes Sosa, Gustavo Santaolalla)
 
-STEP 2: SCEGLI I BRANI SOLO DA QUEI GENERI
-Una volta definiti i 3 generi, scegli i brani ESCLUSIVAMENTE da quegli ambiti.
-I brani devono esistere su Spotify con titoli e artisti ESATTI.
+STEP 3: SCEGLI I BRANI
+Regole FERREE:
+- SOLO brani che rispettano il MOOD della città definito nello Step 1
+- SOLO da artisti dei 3 generi definiti nello Step 2
+- 70% BRANI CLASSICI (anni 60-90) + 30% RECENTI (2000-oggi)
+- Se la città è malinconica → brani malinconici, toni minori, atmosfere sospese
+- Se la città è allegra → brani solari, toni maggiori, ritmo vivace
+- I brani devono esistere su Spotify con titoli e artisti ESATTI
 
 CONSIDERA ANCHE:
 - Il MOMENTO (mattina, sera, notte)
@@ -134,6 +160,12 @@ CONSIDERA ANCHE:
 
 Rispondi SOLO con JSON valido:
 {
+  "cityMood": {
+    "atmosphere": "descrizione dell'atmosfera emotiva della città (max 15 parole)",
+    "feeling": "allegra/malinconica/riflessiva/caotica/etc",
+    "weight": "leggera/pesante/media",
+    "energy": "alta/bassa/contemplativa"
+  },
   "cityGenres": {
     "genre1": {
       "name": "nome del genere specifico",
@@ -171,9 +203,10 @@ Rispondi SOLO con JSON valido:
     {
       "title": "titolo ESATTO Spotify",
       "artist": "artista ESATTO Spotify",
+      "year": anno di uscita,
       "reason": "perché questo brano (max 10 parole)"
     }
-  ] (30 brani - SOLO da artisti dei 3 generi definiti sopra)
+  ] (30 brani - 70% classici anni 60-90, 30% recenti 2000-oggi)
 }`;
 
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
@@ -190,7 +223,7 @@ Rispondi SOLO con JSON valido:
         messages: [
           {
             role: 'user',
-            content: `"${prompt}"\n\nSTEP 1: Definisci i 3 generi che rappresentano l'anima musicale di questo luogo.\nSTEP 2: Scegli i brani SOLO da quei generi.\n\nSolo JSON.`
+            content: `"${prompt}"\n\nSTEP 1: Definisci il MOOD emotivo di questo luogo.\nSTEP 2: Definisci i 3 generi musicali.\nSTEP 3: Scegli i brani (70% classici, 30% recenti) che rispettano quel mood.\n\nSolo JSON.`
           }
         ]
       })
@@ -242,6 +275,7 @@ Rispondi SOLO con JSON valido:
     }
 
     return Response.json({
+      cityMood: analysis.cityMood,
       cityGenres: analysis.cityGenres,
       interpretation: analysis.interpretation,
       parameters: analysis.parameters,
