@@ -39,43 +39,39 @@ async function searchSpotifyTrack(token, artist, title) {
   return null;
 }
 
-// Funzione per ottenere raccomandazioni Spotify
-async function getSpotifyRecommendations(token, params, genres) {
-  const validGenres = [
-    'acoustic', 'ambient', 'blues', 'classical', 'country', 'dance', 
-    'electronic', 'folk', 'funk', 'hip-hop', 'indie', 'jazz', 'latin', 
-    'metal', 'pop', 'punk', 'r-n-b', 'reggae', 'rock', 'soul', 'world-music'
-  ];
-  
-  const seedGenres = genres
-    .map(g => g.toLowerCase().replace(/\s+/g, '-'))
-    .filter(g => validGenres.includes(g))
-    .slice(0, 2);
-  
-  const queryParams = new URLSearchParams({
-    limit: '10',
-    target_valence: params.valence.toString(),
-    target_energy: params.energy.toString(),
-    target_danceability: params.danceability.toString(),
-    min_tempo: params.tempo_min.toString(),
-    max_tempo: params.tempo_max.toString(),
-  });
-  
-  if (seedGenres.length > 0) {
-    queryParams.append('seed_genres', seedGenres.join(','));
-  } else {
-    queryParams.append('seed_genres', 'pop,rock');
-  }
-  
-  const response = await fetch(
-    `https://api.spotify.com/v1/recommendations?${queryParams}`,
+// Funzione per cercare brani di un artista con mood simile
+async function searchArtistTopTracks(token, artist) {
+  const artistQuery = encodeURIComponent(artist);
+  const artistResponse = await fetch(
+    `https://api.spotify.com/v1/search?q=${artistQuery}&type=artist&limit=1`,
     {
       headers: { 'Authorization': `Bearer ${token}` }
     }
   );
   
-  const data = await response.json();
-  return data.tracks || [];
+  const artistData = await artistResponse.json();
+  if (!artistData.artists?.items?.length) return null;
+  
+  const artistId = artistData.artists.items[0].id;
+  
+  const topTracksResponse = await fetch(
+    `https://api.spotify.com/v1/artists/${artistId}/top-tracks?market=IT`,
+    {
+      headers: { 'Authorization': `Bearer ${token}` }
+    }
+  );
+  
+  const topTracksData = await topTracksResponse.json();
+  if (!topTracksData.tracks?.length) return null;
+  
+  const randomTrack = topTracksData.tracks[Math.floor(Math.random() * Math.min(5, topTracksData.tracks.length))];
+  return {
+    title: randomTrack.name,
+    artist: randomTrack.artists[0].name,
+    year: randomTrack.album.release_date?.substring(0, 4) || 'N/A',
+    spotifyId: randomTrack.id,
+    isrc: randomTrack.external_ids?.isrc || null
+  };
 }
 
 export async function POST(request) {
@@ -86,7 +82,7 @@ export async function POST(request) {
       return Response.json({ error: 'Prompt mancante' }, { status: 400 });
     }
 
-    const systemPrompt = `Sei un esperto musicologo e curatore di playlist. Il tuo compito è interpretare contesti, atmosfere e momenti descritti dall'utente e tradurli in parametri musicali precisi.
+    const systemPrompt = `Sei un esperto musicologo e curatore di playlist con una conoscenza enciclopedica della musica mondiale. Il tuo compito è interpretare contesti, atmosfere e momenti descritti dall'utente e tradurli in parametri musicali precisi.
 
 Analizza profondamente:
 - Il LUOGO (geografia, cultura musicale locale, soundscape tipico)
@@ -115,22 +111,38 @@ Rispondi SOLO con un JSON valido, nessun altro testo. Il JSON deve avere questa 
     "mode": "major" o "minor" o "mixed",
     "danceability": numero da 0.0 a 1.0
   },
-  "genres": ["genere1", "genere2", "genere3", "genere4"] (4 generi specifici - usa generi riconosciuti come: rock, pop, jazz, electronic, classical, hip-hop, r-n-b, soul, folk, indie, ambient, blues, latin, reggae, metal, punk, funk, world-music, country, dance),
+  "genres": ["genere1", "genere2", "genere3", "genere4"] (4 generi specifici),
   "suggestedTracks": [
     {
-      "title": "titolo brano ESATTO",
-      "artist": "nome artista ESATTO",
+      "title": "titolo brano ESATTO come su Spotify",
+      "artist": "nome artista ESATTO come su Spotify",
       "reason": "perché questo brano (max 8 parole)"
     }
-  ] (esattamente 12 brani, DEVONO essere brani REALI e FAMOSI che sicuramente esistono su Spotify, niente brani oscuri)
+  ] (esattamente 20 brani)
 }
 
-IMPORTANTE:
-- I brani DEVONO essere reali, famosi e presenti su Spotify
-- Preferisci brani conosciuti, evita deep cuts o tracce oscure
-- Scegli musica che rifletta la CULTURA del luogo quando rilevante
-- Se il contesto è in un paese specifico, includi artisti locali FAMOSI
-- Varia gli artisti, non ripetere lo stesso artista`;
+REGOLE CRITICHE PER I BRANI:
+1. SOLO brani che sei CERTO AL 100% esistano su Spotify
+2. Usa i TITOLI ESATTI come appaiono su Spotify (es: "Bohemian Rhapsody" non "Bohemian rhapsody")
+3. Usa i NOMI ARTISTI ESATTI (es: "The Beatles" non "Beatles")
+4. PREFERISCI:
+   - Singoli famosi e hit riconosciute
+   - Brani con milioni di stream
+   - Canzoni iconiche degli artisti
+5. EVITA:
+   - Album tracks oscure
+   - B-sides
+   - Remix a meno che non siano più famosi dell'originale
+   - Brani live (a meno che non siano l'unica versione famosa)
+6. Per artisti LOCALI del luogo menzionato:
+   - Scegli SOLO i loro brani più famosi
+   - Devono essere artisti con presenza su Spotify
+   - Esempio Italia: Pino Daniele, Lucio Dalla, Franco Battiato (non artisti underground)
+   - Esempio Polonia: Dawid Podsiadło, Myslovitz, Czesław Niemen (non artisti sconosciuti)
+7. VARIA gli artisti - mai lo stesso artista due volte
+8. MESCOLA: 60% brani internazionali iconici + 40% brani locali/di nicchia (ma sempre famosi)
+
+PRIMA di includere un brano, chiediti: "Questo brano ha SICURAMENTE milioni di ascolti su Spotify?" Se non sei sicuro, scegli un altro.`;
 
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -141,7 +153,7 @@ IMPORTANTE:
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 2000,
+        max_tokens: 3000,
         system: systemPrompt,
         messages: [
           {
@@ -163,59 +175,46 @@ IMPORTANTE:
     const cleanJson = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     const analysis = JSON.parse(cleanJson);
 
-    // Step 2: Verifica i brani su Spotify
     const spotifyToken = await getSpotifyToken();
     const verifiedTracks = [];
+    const failedArtists = [];
     
     for (const track of analysis.suggestedTracks || []) {
       if (verifiedTracks.length >= 8) break;
       
       const verified = await searchSpotifyTrack(spotifyToken, track.artist, track.title);
       if (verified) {
-        verifiedTracks.push({
-          ...verified,
-          reason: track.reason
-        });
+        const isDuplicate = verifiedTracks.some(t => t.spotifyId === verified.spotifyId);
+        if (!isDuplicate) {
+          verifiedTracks.push({ ...verified, reason: track.reason });
+        }
+      } else {
+        if (!failedArtists.includes(track.artist)) {
+          failedArtists.push(track.artist);
+        }
       }
     }
     
-    // Se non abbiamo abbastanza brani, usa le raccomandazioni Spotify
-    if (verifiedTracks.length < 8) {
-      const recommendations = await getSpotifyRecommendations(
-        spotifyToken, 
-        analysis.parameters,
-        analysis.genres
-      );
-      
-      for (const track of recommendations) {
+    if (verifiedTracks.length < 8 && failedArtists.length > 0) {
+      for (const artist of failedArtists) {
         if (verifiedTracks.length >= 8) break;
         
-        const isDuplicate = verifiedTracks.some(
-          t => t.spotifyId === track.id || 
-               (t.title.toLowerCase() === track.name.toLowerCase() && 
-                t.artist.toLowerCase() === track.artists[0].name.toLowerCase())
-        );
-        
-        if (!isDuplicate) {
-          verifiedTracks.push({
-            title: track.name,
-            artist: track.artists[0].name,
-            year: track.album.release_date?.substring(0, 4) || 'N/A',
-            spotifyId: track.id,
-            reason: 'Consigliato per il mood'
-          });
+        const topTrack = await searchArtistTopTracks(spotifyToken, artist);
+        if (topTrack) {
+          const isDuplicate = verifiedTracks.some(t => t.spotifyId === topTrack.spotifyId);
+          if (!isDuplicate) {
+            verifiedTracks.push({ ...topTrack, reason: `Brano iconico di ${artist}` });
+          }
         }
       }
     }
 
-    const result = {
+    return Response.json({
       interpretation: analysis.interpretation,
       parameters: analysis.parameters,
       genres: analysis.genres,
       playlist: verifiedTracks
-    };
-
-    return Response.json(result);
+    });
 
   } catch (error) {
     console.error('Error:', error);
