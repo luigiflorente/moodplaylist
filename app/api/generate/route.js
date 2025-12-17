@@ -1,3 +1,83 @@
+// Funzione per ottenere token Spotify
+async function getSpotifyToken() {
+  const response = await fetch('https://accounts.spotify.com/api/token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Authorization': 'Basic ' + Buffer.from(
+        process.env.SPOTIFY_CLIENT_ID + ':' + process.env.SPOTIFY_CLIENT_SECRET
+      ).toString('base64')
+    },
+    body: 'grant_type=client_credentials'
+  });
+  
+  const data = await response.json();
+  return data.access_token;
+}
+
+// Funzione per cercare brani su Spotify
+async function searchSpotifyTrack(token, artist, title) {
+  const query = encodeURIComponent(`track:${title} artist:${artist}`);
+  const response = await fetch(
+    `https://api.spotify.com/v1/search?q=${query}&type=track&limit=1`,
+    {
+      headers: { 'Authorization': `Bearer ${token}` }
+    }
+  );
+  
+  const data = await response.json();
+  if (data.tracks?.items?.length > 0) {
+    const track = data.tracks.items[0];
+    return {
+      title: track.name,
+      artist: track.artists[0].name,
+      year: track.album.release_date?.substring(0, 4) || 'N/A',
+      spotifyId: track.id,
+      isrc: track.external_ids?.isrc || null
+    };
+  }
+  return null;
+}
+
+// Funzione per ottenere raccomandazioni Spotify
+async function getSpotifyRecommendations(token, params, genres) {
+  const validGenres = [
+    'acoustic', 'ambient', 'blues', 'classical', 'country', 'dance', 
+    'electronic', 'folk', 'funk', 'hip-hop', 'indie', 'jazz', 'latin', 
+    'metal', 'pop', 'punk', 'r-n-b', 'reggae', 'rock', 'soul', 'world-music'
+  ];
+  
+  const seedGenres = genres
+    .map(g => g.toLowerCase().replace(/\s+/g, '-'))
+    .filter(g => validGenres.includes(g))
+    .slice(0, 2);
+  
+  const queryParams = new URLSearchParams({
+    limit: '10',
+    target_valence: params.valence.toString(),
+    target_energy: params.energy.toString(),
+    target_danceability: params.danceability.toString(),
+    min_tempo: params.tempo_min.toString(),
+    max_tempo: params.tempo_max.toString(),
+  });
+  
+  if (seedGenres.length > 0) {
+    queryParams.append('seed_genres', seedGenres.join(','));
+  } else {
+    queryParams.append('seed_genres', 'pop,rock');
+  }
+  
+  const response = await fetch(
+    `https://api.spotify.com/v1/recommendations?${queryParams}`,
+    {
+      headers: { 'Authorization': `Bearer ${token}` }
+    }
+  );
+  
+  const data = await response.json();
+  return data.tracks || [];
+}
+
 export async function POST(request) {
   try {
     const { prompt } = await request.json();
@@ -6,7 +86,7 @@ export async function POST(request) {
       return Response.json({ error: 'Prompt mancante' }, { status: 400 });
     }
 
-    const systemPrompt = `Sei un esperto musicologo e curatore di playlist. Il tuo compito è interpretare contesti, atmosfere e momenti descritti dall'utente e tradurli in parametri musicali precisi e playlist appropriate.
+    const systemPrompt = `Sei un esperto musicologo e curatore di playlist. Il tuo compito è interpretare contesti, atmosfere e momenti descritti dall'utente e tradurli in parametri musicali precisi.
 
 Analizza profondamente:
 - Il LUOGO (geografia, cultura musicale locale, soundscape tipico)
@@ -35,28 +115,24 @@ Rispondi SOLO con un JSON valido, nessun altro testo. Il JSON deve avere questa 
     "mode": "major" o "minor" o "mixed",
     "danceability": numero da 0.0 a 1.0
   },
-  "genres": ["genere1", "genere2", "genere3", "genere4"] (4 generi specifici e appropriati),
-  "playlist": [
+  "genres": ["genere1", "genere2", "genere3", "genere4"] (4 generi specifici - usa generi riconosciuti come: rock, pop, jazz, electronic, classical, hip-hop, r-n-b, soul, folk, indie, ambient, blues, latin, reggae, metal, punk, funk, world-music, country, dance),
+  "suggestedTracks": [
     {
-      "title": "titolo brano",
-      "artist": "artista",
-      "year": anno,
-      "reason": "perché questo brano si adatta al contesto (max 10 parole)"
+      "title": "titolo brano ESATTO",
+      "artist": "nome artista ESATTO",
+      "reason": "perché questo brano (max 8 parole)"
     }
-  ] (esattamente 8 brani, tutti REALI e esistenti, vari ma coerenti col contesto)
+  ] (esattamente 12 brani, DEVONO essere brani REALI e FAMOSI che sicuramente esistono su Spotify, niente brani oscuri)
 }
 
 IMPORTANTE:
-- I brani devono essere REALI, esistenti, verificabili
+- I brani DEVONO essere reali, famosi e presenti su Spotify
+- Preferisci brani conosciuti, evita deep cuts o tracce oscure
 - Scegli musica che rifletta la CULTURA del luogo quando rilevante
-- Per contesti in movimento (guida, treno) considera il ritmo del viaggio
-- Per contesti notturni considera l'intimità e l'atmosfera
-- Per contesti con altre persone considera la dinamica sociale
-- Varia gli artisti, non ripetere lo stesso artista
-- Includi mix di classici e contemporanei quando appropriato
-- Se il contesto è in un paese specifico, includi artisti locali`;
+- Se il contesto è in un paese specifico, includi artisti locali FAMOSI
+- Varia gli artisti, non ripetere lo stesso artista`;
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -70,26 +146,76 @@ IMPORTANTE:
         messages: [
           {
             role: 'user',
-            content: `Analizza questo contesto e genera una playlist perfetta:\n\n"${prompt}"\n\nRispondi SOLO con il JSON, nessun altro testo.`
+            content: `Analizza questo contesto e genera i parametri musicali:\n\n"${prompt}"\n\nRispondi SOLO con il JSON, nessun altro testo.`
           }
         ]
       })
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
+    if (!claudeResponse.ok) {
+      const errorText = await claudeResponse.text();
       console.error('Anthropic API error:', errorText);
       return Response.json({ error: 'Errore API Claude' }, { status: 500 });
     }
 
-    const data = await response.json();
-    const content = data.content[0].text;
-
-    // Parse JSON dalla risposta
+    const claudeData = await claudeResponse.json();
+    const content = claudeData.content[0].text;
     const cleanJson = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-    const parsed = JSON.parse(cleanJson);
+    const analysis = JSON.parse(cleanJson);
 
-    return Response.json(parsed);
+    // Step 2: Verifica i brani su Spotify
+    const spotifyToken = await getSpotifyToken();
+    const verifiedTracks = [];
+    
+    for (const track of analysis.suggestedTracks || []) {
+      if (verifiedTracks.length >= 8) break;
+      
+      const verified = await searchSpotifyTrack(spotifyToken, track.artist, track.title);
+      if (verified) {
+        verifiedTracks.push({
+          ...verified,
+          reason: track.reason
+        });
+      }
+    }
+    
+    // Se non abbiamo abbastanza brani, usa le raccomandazioni Spotify
+    if (verifiedTracks.length < 8) {
+      const recommendations = await getSpotifyRecommendations(
+        spotifyToken, 
+        analysis.parameters,
+        analysis.genres
+      );
+      
+      for (const track of recommendations) {
+        if (verifiedTracks.length >= 8) break;
+        
+        const isDuplicate = verifiedTracks.some(
+          t => t.spotifyId === track.id || 
+               (t.title.toLowerCase() === track.name.toLowerCase() && 
+                t.artist.toLowerCase() === track.artists[0].name.toLowerCase())
+        );
+        
+        if (!isDuplicate) {
+          verifiedTracks.push({
+            title: track.name,
+            artist: track.artists[0].name,
+            year: track.album.release_date?.substring(0, 4) || 'N/A',
+            spotifyId: track.id,
+            reason: 'Consigliato per il mood'
+          });
+        }
+      }
+    }
+
+    const result = {
+      interpretation: analysis.interpretation,
+      parameters: analysis.parameters,
+      genres: analysis.genres,
+      playlist: verifiedTracks
+    };
+
+    return Response.json(result);
 
   } catch (error) {
     console.error('Error:', error);
