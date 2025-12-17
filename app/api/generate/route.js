@@ -118,7 +118,7 @@ Rispondi SOLO con un JSON valido, nessun altro testo. Il JSON deve avere questa 
       "artist": "nome artista ESATTO come su Spotify",
       "reason": "perché questo brano (max 8 parole)"
     }
-  ] (esattamente 20 brani)
+  ] (esattamente 30 brani)
 }
 
 REGOLE CRITICHE PER I BRANI:
@@ -153,7 +153,7 @@ PRIMA di includere un brano, chiediti: "Questo brano ha SICURAMENTE milioni di a
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 3000,
+        max_tokens: 4000,
         system: systemPrompt,
         messages: [
           {
@@ -180,7 +180,7 @@ PRIMA di includere un brano, chiediti: "Questo brano ha SICURAMENTE milioni di a
     const failedArtists = [];
     
     for (const track of analysis.suggestedTracks || []) {
-      if (verifiedTracks.length >= 8) break;
+      if (verifiedTracks.length >= 17) break;
       
       const verified = await searchSpotifyTrack(spotifyToken, track.artist, track.title);
       if (verified) {
@@ -195,9 +195,9 @@ PRIMA di includere un brano, chiediti: "Questo brano ha SICURAMENTE milioni di a
       }
     }
     
-    if (verifiedTracks.length < 8 && failedArtists.length > 0) {
+    if (verifiedTracks.length < 17 && failedArtists.length > 0) {
       for (const artist of failedArtists) {
-        if (verifiedTracks.length >= 8) break;
+        if (verifiedTracks.length >= 17) break;
         
         const topTrack = await searchArtistTopTracks(spotifyToken, artist);
         if (topTrack) {
