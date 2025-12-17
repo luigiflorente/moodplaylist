@@ -38,6 +38,38 @@ async function searchSpotifyTrack(token, artist, title) {
   return null;
 }
 
+// Funzione per verificare tonalità con SoundNet
+async function checkTrackMode(artist, title) {
+  try {
+    const params = new URLSearchParams({
+      song: title,
+      artist: artist
+    });
+    
+    const response = await fetch(
+      `https://track-analysis.p.rapidapi.com/pktx/key-bpm?${params.toString()}`,
+      {
+        method: 'GET',
+        headers: {
+          'x-rapidapi-key': process.env.RAPIDAPI_KEY,
+          'x-rapidapi-host': 'track-analysis.p.rapidapi.com'
+        }
+      }
+    );
+    
+    if (!response.ok) return null;
+    
+    const data = await response.json();
+    return {
+      key: data.key || null,
+      mode: data.mode || null
+    };
+  } catch (error) {
+    console.error('SoundNet error:', error);
+    return null;
+  }
+}
+
 // Funzione per cercare top tracks di un artista
 async function searchArtistTopTracks(token, artist) {
   const artistQuery = encodeURIComponent(artist);
@@ -86,7 +118,7 @@ REGOLA 1: MOOD DELLA CITTÀ
 Definisci se la città è: allegra, malinconica, energica, riflessiva, caotica, etc.
 
 Esempi:
-- CRACOVIA: malinconica, riflessiva
+- CRACOVIA: malinconica
 - NAPOLI: energica, passionale
 - BERLINO: fredda, sperimentale
 - TOKYO: malinconica, ordinata
@@ -108,14 +140,16 @@ NAPOLI:
 3. Cantautorato intenso (Lucio Dalla, Edoardo Bennato)
 
 REGOLA 3: BRANI
-- SOLO brani degli artisti dei 3 generi definiti
+- Se città MALINCONICA → SOLO brani in tonalità MINORE
+- Se città ALLEGRA/ENERGICA → SOLO brani in tonalità MAGGIORE
 - 70% brani classici (anni 60-90) + 30% recenti (2000-oggi)
+- SOLO brani degli artisti dei 3 generi definiti
 - Brani REALI che esistono su Spotify
-- Titoli e artisti ESATTI come appaiono su Spotify
 
 Rispondi SOLO con JSON:
 {
   "cityMood": "malinconica/allegra/energica/etc",
+  "requiredMode": "minor" o "major",
   "cityGenres": [
     {"name": "genere1", "artists": ["artista1", "artista2"]},
     {"name": "genere2", "artists": ["artista1", "artista2"]},
@@ -126,7 +160,7 @@ Rispondi SOLO con JSON:
       "title": "titolo ESATTO Spotify",
       "artist": "artista ESATTO Spotify"
     }
-  ] (30 brani)
+  ] (40 brani)
 }`;
 
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
@@ -143,7 +177,7 @@ Rispondi SOLO con JSON:
         messages: [
           {
             role: 'user',
-            content: `"${prompt}"\n\n3 regole:\n1. Mood della città\n2. 3 generi\n3. Brani\n\nSolo JSON.`
+            content: `"${prompt}"\n\n3 regole:\n1. Mood della città\n2. 3 generi\n3. Brani in tonalità corretta\n\nSolo JSON.`
           }
         ]
       })
@@ -160,42 +194,43 @@ Rispondi SOLO con JSON:
     const cleanJson = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     const analysis = JSON.parse(cleanJson);
 
+    const requiredMode = analysis.requiredMode;
+    
     const spotifyToken = await getSpotifyToken();
     const verifiedTracks = [];
-    const failedArtists = [];
     
     for (const track of analysis.suggestedTracks || []) {
       if (verifiedTracks.length >= 17) break;
       
-      const verified = await searchSpotifyTrack(spotifyToken, track.artist, track.title);
-      if (verified) {
-        const isDuplicate = verifiedTracks.some(t => t.spotifyId === verified.spotifyId);
-        if (!isDuplicate) {
-          verifiedTracks.push(verified);
-        }
-      } else {
-        if (!failedArtists.includes(track.artist)) {
-          failedArtists.push(track.artist);
-        }
+      // Step 1: Verifica che esista su Spotify
+      const spotifyTrack = await searchSpotifyTrack(spotifyToken, track.artist, track.title);
+      if (!spotifyTrack) continue;
+      
+      // Step 2: Verifica la tonalità con SoundNet
+      const modeInfo = await checkTrackMode(track.artist, track.title);
+      
+      // Se non troviamo info, accettiamo comunque il brano
+      if (!modeInfo || !modeInfo.mode) {
+        verifiedTracks.push(spotifyTrack);
+        continue;
       }
-    }
-    
-    if (verifiedTracks.length < 17 && failedArtists.length > 0) {
-      for (const artist of failedArtists) {
-        if (verifiedTracks.length >= 17) break;
-        
-        const topTrack = await searchArtistTopTracks(spotifyToken, artist);
-        if (topTrack) {
-          const isDuplicate = verifiedTracks.some(t => t.spotifyId === topTrack.spotifyId);
-          if (!isDuplicate) {
-            verifiedTracks.push(topTrack);
-          }
+      
+      // Step 3: Teniamo solo se la tonalità è quella richiesta
+      if (modeInfo.mode.toLowerCase() === requiredMode) {
+        const isDuplicate = verifiedTracks.some(t => t.spotifyId === spotifyTrack.spotifyId);
+        if (!isDuplicate) {
+          verifiedTracks.push({
+            ...spotifyTrack,
+            key: modeInfo.key,
+            mode: modeInfo.mode
+          });
         }
       }
     }
 
     return Response.json({
       cityMood: analysis.cityMood,
+      requiredMode: requiredMode,
       cityGenres: analysis.cityGenres,
       playlist: verifiedTracks
     });
