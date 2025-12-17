@@ -82,131 +82,59 @@ export async function POST(request) {
       return Response.json({ error: 'Prompt mancante' }, { status: 400 });
     }
 
-    const systemPrompt = `Sei un esperto musicale con una conoscenza profonda dell'anima musicale di ogni città del mondo.
+    const systemPrompt = `Sei un esperto musicale. Segui SOLO queste 3 regole:
 
-IL TUO METODO - TRE STEP OBBLIGATORI:
+REGOLA 1: MOOD DELLA CITTÀ
+Definisci se la città è: allegra, malinconica, energica, riflessiva, caotica, etc.
 
-STEP 1: DEFINISCI IL MOOD DELLA CITTÀ
-Prima di tutto chiediti: "Qual è l'ATMOSFERA EMOTIVA di questa città?"
-- È allegra o malinconica?
-- Caotica o riflessiva?
-- Solare o cupa?
-- Energica o contemplativa?
-- Leggera o pesante di storia?
+Esempi:
+- CRACOVIA: malinconica
+- NAPOLI: energica, passionale
+- BERLINO: fredda, sperimentale
+- TOKYO: malinconica, ordinata
+- ROMA: ironica, decadente
+- BUENOS AIRES: nostalgica, passionale
 
-ESEMPI:
+REGOLA 2: 3 GENERI DELLA CITTÀ
+Scegli 3 generi musicali che rappresentano quella città.
 
-NAPOLI: Caotica, vitale, dolente ma mai rassegnata. Energia di strada, passione, sole anche nella tristezza.
-
-CRACOVIA: Malinconica, riflessiva, profonda. Non triste ma contemplativa. Elegante nel dolore. Pesante di storia ma con dignità.
-
-BERLINO: Fredda, libera, sperimentale. Cicatrici visibili. Rinascita continua. Notturna.
-
-TOKYO: Ordinata fuori, caotica dentro. Solitudine collettiva. Malinconia urbana mascherata da efficienza.
-
-ROMA: Decadente, ironica, eterna. Bellezza sfacciata. Cinismo affettuoso.
-
-BUENOS AIRES: Nostalgica, passionale, drammatica. Tango nell'anima. Malinconia come identità.
-
-STEP 2: DEFINISCI I 3 GENERI MUSICALI DEL LUOGO
-Generi SPECIFICI con artisti di riferimento che incarnano quel posto.
-
-ESEMPI:
+Esempi:
+CRACOVIA:
+1. Jazz europeo moderno (Esbjörn Svensson Trio, Marcin Wasilewski Trio, Tomasz Stańko)
+2. Classica contemporanea polacca (Górecki, Preisner, Penderecki)
+3. Elettronica/trip-hop polacca (Skalpel, Leszek Możdżer)
 
 NAPOLI:
 1. Blues napoletano (Pino Daniele, James Senese, Napoli Centrale)
-2. Nu jazz/funk mediterraneo (Nu Genea, Fatima)
-3. Cantautorato italiano intenso (Lucio Dalla, Edoardo Bennato)
+2. Nu jazz/funk mediterraneo (Nu Genea)
+3. Cantautorato intenso (Lucio Dalla, Edoardo Bennato)
 
-CRACOVIA:
-1. Jazz europeo moderno (Esbjörn Svensson Trio, Marcin Wasilewski Trio, Tomasz Stańko)
-2. Musica classica contemporanea polacca (Górecki, Preisner, Penderecki)
-3. Elettronica/trip-hop polacca (Skalpel, Leszek Możdżer)
+REGOLA 3: BRANI
+- Se città MALINCONICA → SOLO brani in tonalità MINORE
+- Se città ALLEGRA/ENERGICA → SOLO brani in tonalità MAGGIORE
+- 70% brani classici (anni 60-90) + 30% recenti (2000-oggi)
+- SOLO brani degli artisti dei 3 generi definiti
+- Brani REALI che esistono su Spotify
 
-BERLINO:
-1. Elettronica d'autore (Moderat, Apparat, Nils Frahm)
-2. Art rock/krautrock (Can, Tangerine Dream, Neu!)
-3. Cantautorato tedesco (Rio Reiser, Element of Crime)
+NIENT'ALTRO. SOLO QUESTE 3 REGOLE.
 
-TOKYO:
-1. City pop giapponese (Tatsuro Yamashita, Mariya Takeuchi)
-2. Jazz giapponese (Ryo Fukui, Toshiko Akiyoshi)
-3. Ambient/elettronica giapponese (Ryuichi Sakamoto, Hiroshi Yoshimura)
-
-ROMA:
-1. Cantautorato romano (Antonello Venditti, Francesco De Gregori)
-2. Nu soul/elettronica italiana (Cosmo, Mace, Venerus)
-3. Colonne sonore italiane (Ennio Morricone, Piero Piccioni)
-
-BUENOS AIRES:
-1. Tango nuevo (Astor Piazzolla, Gotan Project)
-2. Rock argentino (Charly García, Fito Páez, Soda Stereo)
-3. Folklore argentino moderno (Mercedes Sosa, Gustavo Santaolalla)
-
-STEP 3: SCEGLI I BRANI
-Regole FERREE:
-- SOLO brani che rispettano il MOOD della città definito nello Step 1
-- SOLO da artisti dei 3 generi definiti nello Step 2
-- 70% BRANI CLASSICI (anni 60-90) + 30% RECENTI (2000-oggi)
-- Se la città è malinconica → brani malinconici, toni minori, atmosfere sospese
-- Se la città è allegra → brani solari, toni maggiori, ritmo vivace
-- I brani devono esistere su Spotify con titoli e artisti ESATTI
-
-CONSIDERA ANCHE:
-- Il MOMENTO (mattina, sera, notte)
-- L'ATTIVITÀ (guidare, camminare, seduto)
-- La STAGIONE (l'inverno a Cracovia è diverso dall'inverno a Napoli)
-- La COMPAGNIA (solo, con qualcuno)
-
-Rispondi SOLO con JSON valido:
+Rispondi SOLO con JSON:
 {
-  "cityMood": {
-    "atmosphere": "descrizione dell'atmosfera emotiva della città (max 15 parole)",
-    "feeling": "allegra/malinconica/riflessiva/caotica/etc",
-    "weight": "leggera/pesante/media",
-    "energy": "alta/bassa/contemplativa"
-  },
-  "cityGenres": {
-    "genre1": {
-      "name": "nome del genere specifico",
-      "artists": ["artista1", "artista2", "artista3"]
-    },
-    "genre2": {
-      "name": "nome del genere specifico",
-      "artists": ["artista1", "artista2", "artista3"]
-    },
-    "genre3": {
-      "name": "nome del genere specifico",
-      "artists": ["artista1", "artista2", "artista3"]
-    }
-  },
-  "interpretation": {
-    "mood": "il feeling del momento (max 8 parole)",
-    "energy": "che tipo di energia (max 6 parole)",
-    "texture": "come suona (max 6 parole)",
-    "setting": "dove sei (max 6 parole)",
-    "movement": "cosa fai (max 5 parole)"
-  },
-  "parameters": {
-    "valence": numero 0.0-1.0,
-    "energy": numero 0.0-1.0,
-    "tempo_min": BPM minimo,
-    "tempo_max": BPM massimo,
-    "tempo_target": BPM ideale,
-    "acousticness": numero 0.0-1.0,
-    "instrumentalness": numero 0.0-1.0,
-    "mode": "major"/"minor"/"mixed",
-    "danceability": numero 0.0-1.0
-  },
-  "genres": ["genere1", "genere2", "genere3"],
+  "cityMood": "malinconica/allegra/energica/etc",
+  "cityGenres": [
+    {"name": "genere1", "artists": ["artista1", "artista2"]},
+    {"name": "genere2", "artists": ["artista1", "artista2"]},
+    {"name": "genere3", "artists": ["artista1", "artista2"]}
+  ],
+  "mode": "minor" o "major",
   "suggestedTracks": [
     {
       "title": "titolo ESATTO Spotify",
       "artist": "artista ESATTO Spotify",
-      "year": anno di uscita,
-      "reason": "perché questo brano (max 10 parole)"
+      "key": "tonalità del brano (es: Am, Dm, Em per minori - C, G, D per maggiori)",
+      "year": anno
     }
-  ] (30 brani - 70% classici anni 60-90, 30% recenti 2000-oggi)
+  ] (30 brani)
 }`;
 
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
@@ -223,7 +151,7 @@ Rispondi SOLO con JSON valido:
         messages: [
           {
             role: 'user',
-            content: `"${prompt}"\n\nSTEP 1: Definisci il MOOD emotivo di questo luogo.\nSTEP 2: Definisci i 3 generi musicali.\nSTEP 3: Scegli i brani (70% classici, 30% recenti) che rispettano quel mood.\n\nSolo JSON.`
+            content: `"${prompt}"\n\n3 regole:\n1. Mood della città\n2. 3 generi\n3. Brani in tonalità corretta (minore se malinconica, maggiore se allegra)\n\nSolo JSON.`
           }
         ]
       })
@@ -251,7 +179,7 @@ Rispondi SOLO con JSON valido:
       if (verified) {
         const isDuplicate = verifiedTracks.some(t => t.spotifyId === verified.spotifyId);
         if (!isDuplicate) {
-          verifiedTracks.push({ ...verified, reason: track.reason });
+          verifiedTracks.push({ ...verified, key: track.key });
         }
       } else {
         if (!failedArtists.includes(track.artist)) {
@@ -268,7 +196,7 @@ Rispondi SOLO con JSON valido:
         if (topTrack) {
           const isDuplicate = verifiedTracks.some(t => t.spotifyId === topTrack.spotifyId);
           if (!isDuplicate) {
-            verifiedTracks.push({ ...topTrack, reason: `Brano di ${artist}` });
+            verifiedTracks.push({ ...topTrack });
           }
         }
       }
@@ -277,9 +205,7 @@ Rispondi SOLO con JSON valido:
     return Response.json({
       cityMood: analysis.cityMood,
       cityGenres: analysis.cityGenres,
-      interpretation: analysis.interpretation,
-      parameters: analysis.parameters,
-      genres: analysis.genres,
+      mode: analysis.mode,
       playlist: verifiedTracks
     });
 
