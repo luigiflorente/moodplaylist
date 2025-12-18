@@ -1,4 +1,4 @@
-// Funzione per analizzare brano con SoundNet (tutti i dati)
+// Funzione per analizzare brano con SoundNet
 async function analyzeTrack(artist, title) {
   try {
     const params = new URLSearchParams({
@@ -46,54 +46,20 @@ export async function POST(request) {
       return Response.json({ error: 'Prompt mancante' }, { status: 400 });
     }
 
-    const systemPrompt = `Sei un esperto musicale. Segui SOLO queste 3 regole:
-
-REGOLA 1: MOOD DELLA CITTÀ
-Definisci se la città è: allegra, malinconica, energica, riflessiva, caotica, etc.
-
-Esempi:
-- CRACOVIA: malinconica
-- NAPOLI: energica, passionale
-- BERLINO: fredda, sperimentale
-- TOKYO: malinconica, ordinata
-- ROMA: ironica, decadente
-- BUENOS AIRES: nostalgica, passionale
-
-REGOLA 2: 3 GENERI DELLA CITTÀ
-Scegli 3 generi musicali che rappresentano quella città.
-
-Esempi:
-CRACOVIA:
-1. Jazz europeo moderno (Esbjörn Svensson Trio, Marcin Wasilewski Trio, Tomasz Stańko)
-2. Classica contemporanea polacca (Górecki, Preisner, Penderecki)
-3. Elettronica/trip-hop polacca (Skalpel, Leszek Możdżer)
-
-NAPOLI:
-1. Blues napoletano (Pino Daniele, James Senese, Napoli Centrale)
-2. Nu jazz/funk mediterraneo (Nu Genea)
-3. Cantautorato intenso (Lucio Dalla, Edoardo Bennato)
-
-REGOLA 3: BRANI
-- 70% brani classici (anni 60-90) + 30% recenti (2000-oggi)
-- SOLO brani degli artisti dei 3 generi definiti
-- Brani FAMOSI che sicuramente esistono
-- Titoli e artisti ESATTI
+    const systemPrompt = `Sei un esperto musicale. L'utente ti descrive un momento, un luogo, un'atmosfera. Tu proponi 50 brani che catturano perfettamente quel mood.
 
 Rispondi SOLO con JSON:
 {
-  "cityMood": "malinconica/allegra/energica/etc",
-  "cityGenres": [
-    {"name": "genere1", "artists": ["artista1", "artista2"]},
-    {"name": "genere2", "artists": ["artista1", "artista2"]},
-    {"name": "genere3", "artists": ["artista1", "artista2"]}
-  ],
+  "interpretation": "la tua interpretazione del mood in 2-3 frasi",
   "suggestedTracks": [
     {
-      "title": "titolo ESATTO",
-      "artist": "artista ESATTO"
+      "title": "titolo ESATTO come su Spotify",
+      "artist": "artista ESATTO come su Spotify"
     }
-  ] (50 brani)
-}`;
+  ]
+}
+
+IMPORTANTE: i brani devono essere REALI e FAMOSI. Usa titoli e artisti esatti.`;
 
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -109,7 +75,7 @@ Rispondi SOLO con JSON:
         messages: [
           {
             role: 'user',
-            content: `"${prompt}"\n\n3 regole:\n1. Mood della città\n2. 3 generi\n3. Brani famosi\n\nSolo JSON.`
+            content: prompt
           }
         ]
       })
@@ -126,9 +92,6 @@ Rispondi SOLO con JSON:
     const cleanJson = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     const analysis = JSON.parse(cleanJson);
 
-    const cityMood = analysis.cityMood.toLowerCase();
-    const isMelancholic = cityMood.includes('malincon') || cityMood.includes('rifless') || cityMood.includes('nostalig') || cityMood.includes('triste');
-    
     const verifiedTracks = [];
     
     for (const track of analysis.suggestedTracks || []) {
@@ -136,42 +99,29 @@ Rispondi SOLO con JSON:
       
       const trackInfo = await analyzeTrack(track.artist, track.title);
       
-      if (!trackInfo) continue;
-      
-      // Filtro per mood della città
-      let passesFilter = false;
-      
-      if (isMelancholic) {
-        // Città malinconica: happiness < 50 E mode minor
-        passesFilter = trackInfo.happiness < 50 && trackInfo.mode?.toLowerCase() === 'minor';
-      } else {
-        // Città allegra/energica: happiness >= 50 O mode major
-        passesFilter = trackInfo.happiness >= 50 || trackInfo.mode?.toLowerCase() === 'major';
-      }
-      
-      if (!passesFilter) continue;
-      
-      const isDuplicate = verifiedTracks.some(
-        t => t.title.toLowerCase() === track.title.toLowerCase() && 
-             t.artist.toLowerCase() === track.artist.toLowerCase()
-      );
-      
-      if (!isDuplicate) {
-        verifiedTracks.push({
-          title: track.title,
-          artist: track.artist,
-          key: trackInfo.key,
-          mode: trackInfo.mode,
-          tempo: trackInfo.tempo,
-          happiness: trackInfo.happiness,
-          energy: trackInfo.energy
-        });
+      // Se SoundNet trova il brano, lo aggiungiamo con tutti i dati
+      if (trackInfo) {
+        const isDuplicate = verifiedTracks.some(
+          t => t.title.toLowerCase() === track.title.toLowerCase() && 
+               t.artist.toLowerCase() === track.artist.toLowerCase()
+        );
+        
+        if (!isDuplicate) {
+          verifiedTracks.push({
+            title: track.title,
+            artist: track.artist,
+            key: trackInfo.key,
+            mode: trackInfo.mode,
+            tempo: trackInfo.tempo,
+            happiness: trackInfo.happiness,
+            energy: trackInfo.energy
+          });
+        }
       }
     }
 
     return Response.json({
-      cityMood: analysis.cityMood,
-      cityGenres: analysis.cityGenres,
+      interpretation: analysis.interpretation,
       playlist: verifiedTracks
     });
 
