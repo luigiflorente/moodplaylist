@@ -91,7 +91,7 @@ Rispondi SOLO con JSON:
       "title": "titolo ESATTO",
       "artist": "artista ESATTO"
     }
-  ] (40 brani)
+  ] (80 brani)
 }`;
 
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
