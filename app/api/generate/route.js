@@ -91,7 +91,7 @@ Rispondi SOLO con JSON:
       "title": "titolo ESATTO",
       "artist": "artista ESATTO"
     }
-  ] (80 brani)
+  ] (50 brani)
 }`;
 
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
@@ -103,7 +103,7 @@ Rispondi SOLO con JSON:
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 4000,
+        max_tokens: 8000,
         system: systemPrompt,
         messages: [
           {
