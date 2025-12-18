@@ -1,45 +1,5 @@
-// Funzione per ottenere token Spotify
-async function getSpotifyToken() {
-  const response = await fetch('https://accounts.spotify.com/api/token', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Authorization': 'Basic ' + Buffer.from(
-        process.env.SPOTIFY_CLIENT_ID + ':' + process.env.SPOTIFY_CLIENT_SECRET
-      ).toString('base64')
-    },
-    body: 'grant_type=client_credentials'
-  });
-  
-  const data = await response.json();
-  return data.access_token;
-}
-
-// Funzione per cercare brani su Spotify
-async function searchSpotifyTrack(token, artist, title) {
-  const query = encodeURIComponent(`track:${title} artist:${artist}`);
-  const response = await fetch(
-    `https://api.spotify.com/v1/search?q=${query}&type=track&limit=1`,
-    {
-      headers: { 'Authorization': `Bearer ${token}` }
-    }
-  );
-  
-  const data = await response.json();
-  if (data.tracks?.items?.length > 0) {
-    const track = data.tracks.items[0];
-    return {
-      title: track.name,
-      artist: track.artists[0].name,
-      year: track.album.release_date?.substring(0, 4) || 'N/A',
-      spotifyId: track.id
-    };
-  }
-  return null;
-}
-
-// Funzione per verificare tonalità con SoundNet
-async function checkTrackMode(artist, title) {
+// Funzione per verificare brano con SoundNet (esistenza + tonalità)
+async function analyzeTrack(artist, title) {
   try {
     const params = new URLSearchParams({
       song: title,
@@ -60,48 +20,19 @@ async function checkTrackMode(artist, title) {
     if (!response.ok) return null;
     
     const data = await response.json();
+    
+    // Se non trova il brano, ritorna null
+    if (!data || !data.key) return null;
+    
     return {
-      key: data.key || null,
-      mode: data.mode || null
+      key: data.key,
+      mode: data.mode,
+      tempo: data.tempo
     };
   } catch (error) {
     console.error('SoundNet error:', error);
     return null;
   }
-}
-
-// Funzione per cercare top tracks di un artista
-async function searchArtistTopTracks(token, artist) {
-  const artistQuery = encodeURIComponent(artist);
-  const artistResponse = await fetch(
-    `https://api.spotify.com/v1/search?q=${artistQuery}&type=artist&limit=1`,
-    {
-      headers: { 'Authorization': `Bearer ${token}` }
-    }
-  );
-  
-  const artistData = await artistResponse.json();
-  if (!artistData.artists?.items?.length) return null;
-  
-  const artistId = artistData.artists.items[0].id;
-  
-  const topTracksResponse = await fetch(
-    `https://api.spotify.com/v1/artists/${artistId}/top-tracks?market=IT`,
-    {
-      headers: { 'Authorization': `Bearer ${token}` }
-    }
-  );
-  
-  const topTracksData = await topTracksResponse.json();
-  if (!topTracksData.tracks?.length) return null;
-  
-  const randomTrack = topTracksData.tracks[Math.floor(Math.random() * Math.min(5, topTracksData.tracks.length))];
-  return {
-    title: randomTrack.name,
-    artist: randomTrack.artists[0].name,
-    year: randomTrack.album.release_date?.substring(0, 4) || 'N/A',
-    spotifyId: randomTrack.id
-  };
 }
 
 export async function POST(request) {
@@ -144,7 +75,7 @@ REGOLA 3: BRANI
 - Se città ALLEGRA/ENERGICA → SOLO brani in tonalità MAGGIORE
 - 70% brani classici (anni 60-90) + 30% recenti (2000-oggi)
 - SOLO brani degli artisti dei 3 generi definiti
-- Brani REALI che esistono su Spotify
+- Brani FAMOSI che sicuramente esistono
 
 Rispondi SOLO con JSON:
 {
@@ -157,8 +88,8 @@ Rispondi SOLO con JSON:
   ],
   "suggestedTracks": [
     {
-      "title": "titolo ESATTO Spotify",
-      "artist": "artista ESATTO Spotify"
+      "title": "titolo ESATTO",
+      "artist": "artista ESATTO"
     }
   ] (40 brani)
 }`;
@@ -195,36 +126,34 @@ Rispondi SOLO con JSON:
     const analysis = JSON.parse(cleanJson);
 
     const requiredMode = analysis.requiredMode;
-    
-    const spotifyToken = await getSpotifyToken();
     const verifiedTracks = [];
     
     for (const track of analysis.suggestedTracks || []) {
       if (verifiedTracks.length >= 17) break;
       
-      // Step 1: Verifica che esista su Spotify
-      const spotifyTrack = await searchSpotifyTrack(spotifyToken, track.artist, track.title);
-      if (!spotifyTrack) continue;
+      // Verifica con SoundNet (esistenza + tonalità)
+      const trackInfo = await analyzeTrack(track.artist, track.title);
       
-      // Step 2: Verifica la tonalità con SoundNet
-      const modeInfo = await checkTrackMode(track.artist, track.title);
+      // Se non trova il brano, salta
+      if (!trackInfo) continue;
       
-      // Se non troviamo info, accettiamo comunque il brano
-      if (!modeInfo || !modeInfo.mode) {
-        verifiedTracks.push(spotifyTrack);
-        continue;
-      }
+      // Se la tonalità non corrisponde, salta
+      if (trackInfo.mode && trackInfo.mode.toLowerCase() !== requiredMode) continue;
       
-      // Step 3: Teniamo solo se la tonalità è quella richiesta
-      if (modeInfo.mode.toLowerCase() === requiredMode) {
-        const isDuplicate = verifiedTracks.some(t => t.spotifyId === spotifyTrack.spotifyId);
-        if (!isDuplicate) {
-          verifiedTracks.push({
-            ...spotifyTrack,
-            key: modeInfo.key,
-            mode: modeInfo.mode
-          });
-        }
+      // Controlla duplicati
+      const isDuplicate = verifiedTracks.some(
+        t => t.title.toLowerCase() === track.title.toLowerCase() && 
+             t.artist.toLowerCase() === track.artist.toLowerCase()
+      );
+      
+      if (!isDuplicate) {
+        verifiedTracks.push({
+          title: track.title,
+          artist: track.artist,
+          key: trackInfo.key,
+          mode: trackInfo.mode,
+          tempo: trackInfo.tempo
+        });
       }
     }
 
