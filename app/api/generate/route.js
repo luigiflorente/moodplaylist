@@ -38,17 +38,6 @@ async function analyzeTrack(artist, title) {
   }
 }
 
-function matchesParameters(trackInfo, params) {
-  if (params.mode && trackInfo.mode?.toLowerCase() !== params.mode) return false;
-  if (params.happinessMax && trackInfo.happiness > params.happinessMax) return false;
-  if (params.happinessMin && trackInfo.happiness < params.happinessMin) return false;
-  if (params.energyMax && trackInfo.energy > params.energyMax) return false;
-  if (params.energyMin && trackInfo.energy < params.energyMin) return false;
-  if (params.tempoMax && trackInfo.tempo > params.tempoMax) return false;
-  if (params.tempoMin && trackInfo.tempo < params.tempoMin) return false;
-  return true;
-}
-
 export async function POST(request) {
   try {
     const { prompt } = await request.json();
@@ -86,12 +75,7 @@ Rispondi SOLO con JSON:
   "location": "il luogo identificato",
   "region": "la regione culturale (es: Est Europa, Sud Italia)",
   "mood": "il mood della richiesta (es: malinconico, energico)",
-  "localArtists": ["artista1", "artista2", "artista3", ...],
-  "parameters": {
-    "mode": "minor" o "major",
-    "happinessMax": numero o null,
-    "energyMax": numero o null
-  }
+  "localArtists": ["artista1", "artista2", "artista3", ...]
 }`
           }
         ]
@@ -152,7 +136,6 @@ IMPORTANTE: I primi 25 brani DEVONO essere degli artisti elencati sopra. Titoli 
 
     console.log('Step 2 - First 5 tracks:', tracksInfo.suggestedTracks?.slice(0, 5));
 
-    const params = locationInfo.parameters || {};
     const verifiedTracks = [];
     
     for (const track of tracksInfo.suggestedTracks || []) {
@@ -163,11 +146,6 @@ IMPORTANTE: I primi 25 brani DEVONO essere degli artisti elencati sopra. Titoli 
       const trackInfo = await analyzeTrack(track.artist, track.title);
       
       if (trackInfo) {
-        if (!matchesParameters(trackInfo, params)) {
-          console.log(`Skipped ${track.title} - doesn't match parameters`);
-          continue;
-        }
-        
         const isDuplicate = verifiedTracks.some(
           t => t.title.toLowerCase() === track.title.toLowerCase() && 
                t.artist.toLowerCase() === track.artist.toLowerCase()
@@ -193,7 +171,6 @@ IMPORTANTE: I primi 25 brani DEVONO essere degli artisti elencati sopra. Titoli 
         mood: locationInfo.mood,
         region: locationInfo.region
       },
-      parameters: params,
       playlist: verifiedTracks
     });
 
