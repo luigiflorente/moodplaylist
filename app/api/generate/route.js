@@ -29,12 +29,47 @@ async function analyzeTrack(artist, title) {
       happiness: data.happiness,
       energy: data.energy,
       danceability: data.danceability,
+      acousticness: data.acousticness,
       popularity: data.popularity
     };
   } catch (error) {
     console.error('SoundNet error:', error.message);
     return null;
   }
+}
+
+// Funzione per verificare se il brano corrisponde ai parametri richiesti
+function matchesParameters(trackInfo, params) {
+  // Mode (minor/major)
+  if (params.mode && trackInfo.mode?.toLowerCase() !== params.mode) {
+    return false;
+  }
+  
+  // Happiness range
+  if (params.happinessMax && trackInfo.happiness > params.happinessMax) {
+    return false;
+  }
+  if (params.happinessMin && trackInfo.happiness < params.happinessMin) {
+    return false;
+  }
+  
+  // Energy range
+  if (params.energyMax && trackInfo.energy > params.energyMax) {
+    return false;
+  }
+  if (params.energyMin && trackInfo.energy < params.energyMin) {
+    return false;
+  }
+  
+  // Tempo range
+  if (params.tempoMax && trackInfo.tempo > params.tempoMax) {
+    return false;
+  }
+  if (params.tempoMin && trackInfo.tempo < params.tempoMin) {
+    return false;
+  }
+  
+  return true;
 }
 
 export async function POST(request) {
@@ -45,39 +80,55 @@ export async function POST(request) {
       return Response.json({ error: 'Prompt mancante' }, { status: 400 });
     }
 
-    const systemPrompt = `Sei un esperto musicale con profonda conoscenza di musica locale e di nicchia. L'utente ti descrive un momento, un luogo, un'atmosfera. Tu proponi 30 brani che catturano AUTENTICAMENTE quel mood.
+    const systemPrompt = `Sei un esperto musicale che crea playlist AUTENTICHE basate sul LUOGO.
 
-REGOLE FONDAMENTALI:
+PROCESSO:
 
-1. ARTISTI LOCALI E REGIONALI
-- Se l'utente menziona una città/paese, DEVI includere artisti di quella regione
-- Cracovia/Polonia → Kroke, Zbigniew Preisner, Chopin, Górecki, Skalpel
-- Napoli → Pino Daniele, James Senese, Nu Genea, Napoli Centrale
-- Berlino → Tangerine Dream, Nils Frahm, Apparat
-- Lisbona → Amália Rodrigues, Madredeus, Ana Moura (fado)
-- Buenos Aires → Astor Piazzolla, Gotan Project (tango)
+1. ANALIZZA IL LUOGO (priorità massima)
+Identifica la città/regione e la sua anima musicale:
+- Cracovia/Polonia/Est Europa → Kroke, Preisner, Górecki, Kilar, Chopin, Molchat Doma, klezmer, post-punk sovietico
+- Napoli/Sud Italia → Pino Daniele, James Senese, Nu Genea, Napoli Centrale, blues napoletano
+- Berlino/Germania → Tangerine Dream, Nils Frahm, Apparat, Kraftwerk, elettronica
+- Lisbona/Portogallo → Amália Rodrigues, Madredeus, Ana Moura, fado
+- Buenos Aires/Argentina → Piazzolla, Gotan Project, tango nuevo
+- Parigi/Francia → Serge Gainsbourg, Air, chanson française
+- Tokyo/Giappone → Ryuichi Sakamoto, Yellow Magic Orchestra, ambient giapponese
 
-2. GENERI AUTENTICI DEL LUOGO
-- Est Europa → klezmer, post-punk sovietico (Molchat Doma), dark jazz
-- Italia Sud → blues napoletano, tarantella moderna
-- Scandinavia → jazz nordico, ambient glaciale
-- Balcani → brass band, musica gitana
+2. ANALIZZA L'AZIONE/MOOD
+- Guidare di notte → strumentale, atmosferico, cinematico
+- Passeggiare → ritmo moderato, melodico
+- Malinconia/pioggia → lento, minore, introspettivo
+- Festa/energia → veloce, maggiore, ritmico
 
-3. EVITA I SOLITI NOMI MAINSTREAM
-- NO: Radiohead, Coldplay, U2, Ed Sheeran, i soliti indie rock
-- SÌ: artisti di nicchia, locali, autentici per quel contesto
+3. COMPOSIZIONE PLAYLIST (40 brani)
+- 25 brani di artisti LOCALI/REGIONALI (anima autentica del luogo)
+- 15 brani INTERNAZIONALI che hanno lo stesso mood (non mainstream ovvi)
 
-4. ATMOSFERA COERENTE
-- Guida notturna → brani strumentali, atmosferici, cinematici
-- Malinconia → tonalità minori, tempi lenti
-- Energia → ritmi incalzanti, brass, percussioni
+4. PARAMETRI MUSICALI
+Definisci i parametri ideali per questa richiesta:
+- mode: "minor" o "major"
+- happinessMax: 0-100 (es: 40 per malinconico)
+- happinessMin: 0-100 (es: 50 per allegro)
+- energyMin: 0-100
+- energyMax: 0-100
+- tempoMin: BPM
+- tempoMax: BPM
 
 Rispondi SOLO con JSON:
 {
   "interpretation": {
-    "mood": "descrizione del mood in 2-3 parole",
-    "setting": "dove/quando in 2-3 parole", 
+    "location": "il luogo identificato",
+    "mood": "il mood in 2-3 parole",
     "atmosphere": "l'atmosfera in 2-3 parole"
+  },
+  "parameters": {
+    "mode": "minor" o "major" o null,
+    "happinessMax": numero o null,
+    "happinessMin": numero o null,
+    "energyMin": numero o null,
+    "energyMax": numero o null,
+    "tempoMin": numero o null,
+    "tempoMax": numero o null
   },
   "suggestedTracks": [
     {
@@ -87,7 +138,7 @@ Rispondi SOLO con JSON:
   ]
 }
 
-IMPORTANTE: I titoli e gli artisti devono essere ESATTI come appaiono su Spotify.`;
+IMPORTANTE: I titoli e artisti devono essere ESATTI come su Spotify. Proponi 40 brani.`;
 
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -120,6 +171,7 @@ IMPORTANTE: I titoli e gli artisti devono essere ESATTI come appaiono su Spotify
     const cleanJson = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     const analysis = JSON.parse(cleanJson);
 
+    const params = analysis.parameters || {};
     const verifiedTracks = [];
     
     for (const track of analysis.suggestedTracks || []) {
@@ -131,6 +183,12 @@ IMPORTANTE: I titoli e gli artisti devono essere ESATTI come appaiono su Spotify
       const trackInfo = await analyzeTrack(track.artist, track.title);
       
       if (trackInfo) {
+        // Verifica se il brano corrisponde ai parametri
+        if (!matchesParameters(trackInfo, params)) {
+          console.log(`Skipped ${track.title} - doesn't match parameters`);
+          continue;
+        }
+        
         const isDuplicate = verifiedTracks.some(
           t => t.title.toLowerCase() === track.title.toLowerCase() && 
                t.artist.toLowerCase() === track.artist.toLowerCase()
@@ -152,6 +210,7 @@ IMPORTANTE: I titoli e gli artisti devono essere ESATTI come appaiono su Spotify
 
     return Response.json({
       interpretation: analysis.interpretation,
+      parameters: analysis.parameters,
       playlist: verifiedTracks
     });
 
