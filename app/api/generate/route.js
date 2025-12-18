@@ -1,9 +1,12 @@
+// Funzione per aspettare
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 // Funzione per analizzare brano con SoundNet
 async function analyzeTrack(artist, title) {
   try {
     const url = `https://track-analysis.p.rapidapi.com/pktx/analysis?song=${encodeURIComponent(title)}&artist=${encodeURIComponent(artist)}`;
-    
-    console.log('Checking:', title, '-', artist);
     
     const response = await fetch(url, {
       method: 'GET',
@@ -13,15 +16,9 @@ async function analyzeTrack(artist, title) {
       }
     });
     
-    console.log('Response status:', response.status);
-    
-    if (!response.ok) {
-      console.log('Failed for:', title);
-      return null;
-    }
+    if (!response.ok) return null;
     
     const data = await response.json();
-    console.log('Found:', title, '- happiness:', data.happiness);
     
     if (!data || !data.key) return null;
     
@@ -35,7 +32,7 @@ async function analyzeTrack(artist, title) {
       popularity: data.popularity
     };
   } catch (error) {
-    console.error('SoundNet error for', title, ':', error.message);
+    console.error('SoundNet error:', error.message);
     return null;
   }
 }
@@ -48,7 +45,7 @@ export async function POST(request) {
       return Response.json({ error: 'Prompt mancante' }, { status: 400 });
     }
 
-    const systemPrompt = `Sei un esperto musicale. L'utente ti descrive un momento, un luogo, un'atmosfera. Tu proponi 50 brani che catturano perfettamente quel mood.
+    const systemPrompt = `Sei un esperto musicale. L'utente ti descrive un momento, un luogo, un'atmosfera. Tu proponi 30 brani che catturano perfettamente quel mood.
 
 Rispondi SOLO con JSON:
 {
@@ -101,12 +98,13 @@ IMPORTANTE:
     const cleanJson = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     const analysis = JSON.parse(cleanJson);
 
-    console.log('Claude suggested:', analysis.suggestedTracks?.slice(0, 10));
-
     const verifiedTracks = [];
     
     for (const track of analysis.suggestedTracks || []) {
       if (verifiedTracks.length >= 17) break;
+      
+      // Aspetta 1.1 secondi tra ogni richiesta (rate limit = 1/sec)
+      await delay(1100);
       
       const trackInfo = await analyzeTrack(track.artist, track.title);
       
