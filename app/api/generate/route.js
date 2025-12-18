@@ -40,35 +40,27 @@ async function analyzeTrack(artist, title) {
 
 // Funzione per verificare se il brano corrisponde ai parametri richiesti
 function matchesParameters(trackInfo, params) {
-  // Mode (minor/major)
   if (params.mode && trackInfo.mode?.toLowerCase() !== params.mode) {
     return false;
   }
-  
-  // Happiness range
   if (params.happinessMax && trackInfo.happiness > params.happinessMax) {
     return false;
   }
   if (params.happinessMin && trackInfo.happiness < params.happinessMin) {
     return false;
   }
-  
-  // Energy range
   if (params.energyMax && trackInfo.energy > params.energyMax) {
     return false;
   }
   if (params.energyMin && trackInfo.energy < params.energyMin) {
     return false;
   }
-  
-  // Tempo range
   if (params.tempoMax && trackInfo.tempo > params.tempoMax) {
     return false;
   }
   if (params.tempoMin && trackInfo.tempo < params.tempoMin) {
     return false;
   }
-  
   return true;
 }
 
@@ -80,46 +72,81 @@ export async function POST(request) {
       return Response.json({ error: 'Prompt mancante' }, { status: 400 });
     }
 
-    const systemPrompt = `Sei un esperto musicale che crea playlist AUTENTICHE basate sul LUOGO.
+    const systemPrompt = `SEI UN ESPERTO DI MUSICA LOCALE E REGIONALE.
+
+⚠️ REGOLA FONDAMENTALE - LEGGI ATTENTAMENTE ⚠️
+
+Quando l'utente menziona un LUOGO (città, paese, regione), la playlist DEVE contenere:
+- MINIMO 25 brani di artisti DI QUEL LUOGO o QUELLA REGIONE
+- MASSIMO 15 brani di artisti internazionali (che abbiano comunque un sound coerente)
+
+SE NON RISPETTI QUESTA REGOLA, LA PLAYLIST È SBAGLIATA.
+
+ARTISTI PER LUOGO (usa QUESTI, non inventare):
+
+🇵🇱 CRACOVIA / POLONIA / EST EUROPA:
+- Zbigniew Preisner (colonne sonore)
+- Krzysztof Penderecki (classica)
+- Henryk Górecki (classica)
+- Wojciech Kilar (colonne sonore)
+- Fryderyk Chopin (classica)
+- Kroke (klezmer/world)
+- Skalpel (jazz/elettronica)
+- Marcin Wasilewski Trio (jazz)
+- Tomasz Stańko (jazz)
+- Leszek Możdżer (jazz/piano)
+- Molchat Doma (post-punk bielorusso)
+- Bohren & Der Club of Gore (dark jazz)
+
+🇮🇹 NAPOLI / SUD ITALIA:
+- Pino Daniele
+- James Senese / Napoli Centrale
+- Nu Genea
+- Edoardo Bennato
+- Tullio De Piscopo
+- Tony Esposito
+- Enzo Avitabile
+- Alan Sorrenti
+- Teresa De Sio
+
+🇩🇪 BERLINO / GERMANIA:
+- Tangerine Dream
+- Kraftwerk
+- Nils Frahm
+- Apparat
+- Moderat
+- Ólafur Arnalds (islandese ma sound berlinese)
+
+🇵🇹 LISBONA / PORTOGALLO:
+- Amália Rodrigues
+- Madredeus
+- Ana Moura
+- Mariza
+- Carlos do Carmo
+
+🇦🇷 BUENOS AIRES / ARGENTINA:
+- Astor Piazzolla
+- Gotan Project
+- Bajofondo
+- Carlos Gardel
 
 PROCESSO:
+1. Identifica il LUOGO nella richiesta
+2. Scegli 25+ brani dalla lista artisti di quel luogo
+3. Aggiungi max 15 brani internazionali coerenti col mood
+4. Definisci i parametri musicali
 
-1. ANALIZZA IL LUOGO (priorità massima)
-Identifica la città/regione e la sua anima musicale:
-- Cracovia/Polonia/Est Europa → Kroke, Preisner, Górecki, Kilar, Chopin, Molchat Doma, klezmer, post-punk sovietico
-- Napoli/Sud Italia → Pino Daniele, James Senese, Nu Genea, Napoli Centrale, blues napoletano
-- Berlino/Germania → Tangerine Dream, Nils Frahm, Apparat, Kraftwerk, elettronica
-- Lisbona/Portogallo → Amália Rodrigues, Madredeus, Ana Moura, fado
-- Buenos Aires/Argentina → Piazzolla, Gotan Project, tango nuevo
-- Parigi/Francia → Serge Gainsbourg, Air, chanson française
-- Tokyo/Giappone → Ryuichi Sakamoto, Yellow Magic Orchestra, ambient giapponese
-
-2. ANALIZZA L'AZIONE/MOOD
-- Guidare di notte → strumentale, atmosferico, cinematico
-- Passeggiare → ritmo moderato, melodico
-- Malinconia/pioggia → lento, minore, introspettivo
-- Festa/energia → veloce, maggiore, ritmico
-
-3. COMPOSIZIONE PLAYLIST (40 brani)
-- 25 brani di artisti LOCALI/REGIONALI (anima autentica del luogo)
-- 15 brani INTERNAZIONALI che hanno lo stesso mood (non mainstream ovvi)
-
-4. PARAMETRI MUSICALI
-Definisci i parametri ideali per questa richiesta:
-- mode: "minor" o "major"
-- happinessMax: 0-100 (es: 40 per malinconico)
-- happinessMin: 0-100 (es: 50 per allegro)
-- energyMin: 0-100
-- energyMax: 0-100
-- tempoMin: BPM
-- tempoMax: BPM
+PARAMETRI per il mood:
+- Malinconia/notte/pioggia → mode: "minor", happinessMax: 40, energyMax: 60
+- Energia/festa/sole → mode: "major", happinessMin: 50, energyMin: 50
+- Guidare → tempoMin: 80, tempoMax: 120
 
 Rispondi SOLO con JSON:
 {
   "interpretation": {
-    "location": "il luogo identificato",
-    "mood": "il mood in 2-3 parole",
-    "atmosphere": "l'atmosfera in 2-3 parole"
+    "location": "LUOGO IDENTIFICATO",
+    "mood": "mood in 2-3 parole",
+    "atmosphere": "atmosfera in 2-3 parole"
   },
   "parameters": {
     "mode": "minor" o "major" o null,
@@ -133,12 +160,12 @@ Rispondi SOLO con JSON:
   "suggestedTracks": [
     {
       "title": "titolo ESATTO come su Spotify",
-      "artist": "artista ESATTO come su Spotify"
+      "artist": "artista dalla lista sopra"
     }
   ]
 }
 
-IMPORTANTE: I titoli e artisti devono essere ESATTI come su Spotify. Proponi 40 brani.`;
+RICORDA: MINIMO 25 BRANI DI ARTISTI LOCALI. È OBBLIGATORIO.`;
 
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -154,7 +181,9 @@ IMPORTANTE: I titoli e artisti devono essere ESATTI come su Spotify. Proponi 40 
         messages: [
           {
             role: 'user',
-            content: prompt
+            content: `RICHIESTA: "${prompt}"
+            
+⚠️ RICORDA: Se c'è un luogo nella richiesta, DEVI usare ALMENO 25 brani di artisti di quel luogo/regione. È OBBLIGATORIO.`
           }
         ]
       })
@@ -171,19 +200,21 @@ IMPORTANTE: I titoli e artisti devono essere ESATTI come su Spotify. Proponi 40 
     const cleanJson = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     const analysis = JSON.parse(cleanJson);
 
+    console.log('Location:', analysis.interpretation?.location);
+    console.log('Parameters:', analysis.parameters);
+    console.log('First 5 tracks:', analysis.suggestedTracks?.slice(0, 5));
+
     const params = analysis.parameters || {};
     const verifiedTracks = [];
     
     for (const track of analysis.suggestedTracks || []) {
       if (verifiedTracks.length >= 17) break;
       
-      // Aspetta 1.1 secondi tra ogni richiesta (rate limit = 1/sec)
       await delay(1100);
       
       const trackInfo = await analyzeTrack(track.artist, track.title);
       
       if (trackInfo) {
-        // Verifica se il brano corrisponde ai parametri
         if (!matchesParameters(trackInfo, params)) {
           console.log(`Skipped ${track.title} - doesn't match parameters`);
           continue;
