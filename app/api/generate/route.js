@@ -50,7 +50,11 @@ export async function POST(request) {
 
 Rispondi SOLO con JSON:
 {
-  "interpretation": "la tua interpretazione del mood in 2-3 frasi",
+  "interpretation": {
+    "mood": "descrizione del mood in 2-3 parole",
+    "setting": "dove/quando in 2-3 parole",
+    "atmosphere": "l'atmosfera in 2-3 parole"
+  },
   "suggestedTracks": [
     {
       "title": "titolo ESATTO come su Spotify",
@@ -59,7 +63,10 @@ Rispondi SOLO con JSON:
   ]
 }
 
-IMPORTANTE: i brani devono essere REALI e FAMOSI. Usa titoli e artisti esatti.`;
+IMPORTANTE: 
+- I brani devono essere REALI e FAMOSI
+- Usa titoli e artisti ESATTI come appaiono su Spotify
+- Proponi brani di artisti INTERNAZIONALI conosciuti`;
 
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -99,7 +106,6 @@ IMPORTANTE: i brani devono essere REALI e FAMOSI. Usa titoli e artisti esatti.`;
       
       const trackInfo = await analyzeTrack(track.artist, track.title);
       
-      // Se SoundNet trova il brano, lo aggiungiamo con tutti i dati
       if (trackInfo) {
         const isDuplicate = verifiedTracks.some(
           t => t.title.toLowerCase() === track.title.toLowerCase() && 
