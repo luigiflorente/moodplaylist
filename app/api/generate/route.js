@@ -45,13 +45,38 @@ export async function POST(request) {
       return Response.json({ error: 'Prompt mancante' }, { status: 400 });
     }
 
-    const systemPrompt = `Sei un esperto musicale. L'utente ti descrive un momento, un luogo, un'atmosfera. Tu proponi 30 brani che catturano perfettamente quel mood.
+    const systemPrompt = `Sei un esperto musicale con profonda conoscenza di musica locale e di nicchia. L'utente ti descrive un momento, un luogo, un'atmosfera. Tu proponi 30 brani che catturano AUTENTICAMENTE quel mood.
+
+REGOLE FONDAMENTALI:
+
+1. ARTISTI LOCALI E REGIONALI
+- Se l'utente menziona una città/paese, DEVI includere artisti di quella regione
+- Cracovia/Polonia → Kroke, Zbigniew Preisner, Chopin, Górecki, Skalpel
+- Napoli → Pino Daniele, James Senese, Nu Genea, Napoli Centrale
+- Berlino → Tangerine Dream, Nils Frahm, Apparat
+- Lisbona → Amália Rodrigues, Madredeus, Ana Moura (fado)
+- Buenos Aires → Astor Piazzolla, Gotan Project (tango)
+
+2. GENERI AUTENTICI DEL LUOGO
+- Est Europa → klezmer, post-punk sovietico (Molchat Doma), dark jazz
+- Italia Sud → blues napoletano, tarantella moderna
+- Scandinavia → jazz nordico, ambient glaciale
+- Balcani → brass band, musica gitana
+
+3. EVITA I SOLITI NOMI MAINSTREAM
+- NO: Radiohead, Coldplay, U2, Ed Sheeran, i soliti indie rock
+- SÌ: artisti di nicchia, locali, autentici per quel contesto
+
+4. ATMOSFERA COERENTE
+- Guida notturna → brani strumentali, atmosferici, cinematici
+- Malinconia → tonalità minori, tempi lenti
+- Energia → ritmi incalzanti, brass, percussioni
 
 Rispondi SOLO con JSON:
 {
   "interpretation": {
     "mood": "descrizione del mood in 2-3 parole",
-    "setting": "dove/quando in 2-3 parole",
+    "setting": "dove/quando in 2-3 parole", 
     "atmosphere": "l'atmosfera in 2-3 parole"
   },
   "suggestedTracks": [
@@ -62,10 +87,7 @@ Rispondi SOLO con JSON:
   ]
 }
 
-IMPORTANTE: 
-- I brani devono essere REALI e FAMOSI
-- Usa titoli e artisti ESATTI come appaiono su Spotify
-- Proponi brani di artisti INTERNAZIONALI conosciuti`;
+IMPORTANTE: I titoli e gli artisti devono essere ESATTI come appaiono su Spotify.`;
 
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
