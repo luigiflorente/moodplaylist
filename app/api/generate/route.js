@@ -1,25 +1,27 @@
 // Funzione per analizzare brano con SoundNet
 async function analyzeTrack(artist, title) {
   try {
-    const params = new URLSearchParams({
-      song: title,
-      artist: artist
+    const url = `https://track-analysis.p.rapidapi.com/pktx/analysis?song=${encodeURIComponent(title)}&artist=${encodeURIComponent(artist)}`;
+    
+    console.log('Checking:', title, '-', artist);
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'x-rapidapi-key': process.env.RAPIDAPI_KEY,
+        'x-rapidapi-host': 'track-analysis.p.rapidapi.com'
+      }
     });
     
-    const response = await fetch(
-      `https://track-analysis.p.rapidapi.com/pktx/analysis?${params.toString()}`,
-      {
-        method: 'GET',
-        headers: {
-          'x-rapidapi-key': process.env.RAPIDAPI_KEY,
-          'x-rapidapi-host': 'track-analysis.p.rapidapi.com'
-        }
-      }
-    );
+    console.log('Response status:', response.status);
     
-    if (!response.ok) return null;
+    if (!response.ok) {
+      console.log('Failed for:', title);
+      return null;
+    }
     
     const data = await response.json();
+    console.log('Found:', title, '- happiness:', data.happiness);
     
     if (!data || !data.key) return null;
     
@@ -33,7 +35,7 @@ async function analyzeTrack(artist, title) {
       popularity: data.popularity
     };
   } catch (error) {
-    console.error('SoundNet error:', error);
+    console.error('SoundNet error for', title, ':', error.message);
     return null;
   }
 }
@@ -97,7 +99,9 @@ IMPORTANTE:
     const claudeData = await claudeResponse.json();
     const content = claudeData.content[0].text;
     const cleanJson = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-    const analysis = JSON.parse(cleanJson);console.log('Claude suggested:', analysis.suggestedTracks?.slice(0, 10));
+    const analysis = JSON.parse(cleanJson);
+
+    console.log('Claude suggested:', analysis.suggestedTracks?.slice(0, 10));
 
     const verifiedTracks = [];
     
