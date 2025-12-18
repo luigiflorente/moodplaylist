@@ -97,7 +97,7 @@ IMPORTANTE:
     const claudeData = await claudeResponse.json();
     const content = claudeData.content[0].text;
     const cleanJson = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-    const analysis = JSON.parse(cleanJson);
+    const analysis = JSON.parse(cleanJson);console.log('Claude suggested:', analysis.suggestedTracks?.slice(0, 10));
 
     const verifiedTracks = [];
     
