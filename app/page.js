@@ -121,7 +121,7 @@ export default function Home() {
   };
 
   return (
-    <>
+    <React.Fragment>
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Anton&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap');
       `}</style>
@@ -557,26 +557,19 @@ export default function Home() {
                     }}>
                       ✓ Playlist created with {playlistCreated.tracksAdded} tracks!
                     </p>
-                    
-                      href={playlistCreated.playlistUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        display: 'inline-block',
-                        background: '#1DB954',
-                        color: '#fff',
-                        padding: '14px 28px',
-                        fontSize: '13px',
-                        fontWeight: 700,
-                        letterSpacing: '2px',
-                        textTransform: 'uppercase',
-                        textDecoration: 'none',
-                        borderRadius: '30px',
-                        fontFamily: "'Courier Prime', monospace"
-                      }}
-                    >
-                      OPEN IN SPOTIFY
-                    </a>
+                    <a href={playlistCreated.playlistUrl} target="_blank" rel="noopener noreferrer" style={{
+                      display: 'inline-block',
+                      background: '#1DB954',
+                      color: '#fff',
+                      padding: '14px 28px',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      letterSpacing: '2px',
+                      textTransform: 'uppercase',
+                      textDecoration: 'none',
+                      borderRadius: '30px',
+                      fontFamily: "'Courier Prime', monospace"
+                    }}>OPEN IN SPOTIFY</a>
                   </div>
                 ) : (
                   <div>
@@ -658,24 +651,16 @@ export default function Home() {
                   justifyContent: 'center'
                 }}>
                   {result.playlist?.map((track, i) => (
-                    
-                      key={i}
-                      href={`https://music.apple.com/search?term=${encodeURIComponent(track.artist + ' ' + track.title)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        display: 'inline-block',
-                        background: 'transparent',
-                        color: '#3a3530',
-                        padding: '8px 14px',
-                        fontSize: '12px',
-                        textDecoration: 'none',
-                        border: '1px solid #3a3530',
-                        fontFamily: "'Courier Prime', monospace"
-                      }}
-                    >
-                      {track.title}
-                    </a>
+                    <a key={i} href={`https://music.apple.com/search?term=${encodeURIComponent(track.artist + ' ' + track.title)}`} target="_blank" rel="noopener noreferrer" style={{
+                      display: 'inline-block',
+                      background: 'transparent',
+                      color: '#3a3530',
+                      padding: '8px 14px',
+                      fontSize: '12px',
+                      textDecoration: 'none',
+                      border: '1px solid #3a3530',
+                      fontFamily: "'Courier Prime', monospace"
+                    }}>{track.title}</a>
                   ))}
                 </div>
               </div>
@@ -746,6 +731,6 @@ export default function Home() {
           </footer>
         </div>
       </div>
-    </>
+    </React.Fragment>
   );
 }
