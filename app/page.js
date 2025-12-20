@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Home() {
   const [input, setInput] = useState('');
@@ -8,6 +8,9 @@ export default function Home() {
   const [result, setResult] = useState(null);
   const [phase, setPhase] = useState('idle');
   const [error, setError] = useState(null);
+  const [spotifyToken, setSpotifyToken] = useState(null);
+  const [isCreatingPlaylist, setIsCreatingPlaylist] = useState(false);
+  const [playlistCreated, setPlaylistCreated] = useState(null);
 
   const examplePrompts = [
     "Driving at night in Krakow",
@@ -17,12 +20,22 @@ export default function Home() {
     "Lazy Sunday in Buenos Aires"
   ];
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('spotify_token');
+    if (token) {
+      setSpotifyToken(token);
+      window.history.replaceState({}, '', '/');
+    }
+  }, []);
+
   const handleAnalyze = async () => {
     if (!input.trim()) return;
     
     setIsAnalyzing(true);
     setError(null);
     setPhase('analyzing');
+    setPlaylistCreated(null);
 
     try {
       setPhase('translating');
@@ -62,6 +75,49 @@ export default function Home() {
     setResult(null);
     setPhase('idle');
     setError(null);
+    setPlaylistCreated(null);
+  };
+
+  const connectSpotify = () => {
+    const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID || '68ff042636ad42dfa8ed292f89d7d558';
+    const redirectUri = encodeURIComponent('https://moodplaylist-ten.vercel.app/api/spotify-callback');
+    const scopes = encodeURIComponent('playlist-modify-public playlist-modify-private');
+    const authUrl = `https://accounts.spotify.com/authorize?response_type=code&client_id=${clientId}&scope=${scopes}&redirect_uri=${redirectUri}`;
+    window.location.href = authUrl;
+  };
+
+  const createSpotifyPlaylist = async () => {
+    if (!spotifyToken || !result?.playlist) return;
+    
+    setIsCreatingPlaylist(true);
+    
+    try {
+      const response = await fetch('/api/spotify-playlist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          token: spotifyToken,
+          tracks: result.playlist,
+          playlistName: `Mood: ${input.substring(0, 50)}`
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setPlaylistCreated(data);
+      } else {
+        throw new Error(data.error || 'Failed to create playlist');
+      }
+    } catch (err) {
+      console.error('Error creating playlist:', err);
+      setError('Failed to create Spotify playlist. Please try connecting again.');
+      setSpotifyToken(null);
+    } finally {
+      setIsCreatingPlaylist(false);
+    }
   };
 
   return (
@@ -76,7 +132,6 @@ export default function Home() {
         position: 'relative',
         overflow: 'hidden'
       }}>
-        {/* Texture carta invecchiata */}
         <div style={{
           position: 'fixed',
           inset: 0,
@@ -87,7 +142,6 @@ export default function Home() {
           pointerEvents: 'none'
         }} />
 
-        {/* Macchie di caffè */}
         <div style={{
           position: 'fixed',
           top: '8%',
@@ -122,7 +176,6 @@ export default function Home() {
           pointerEvents: 'none'
         }} />
 
-        {/* Bordi scuri consumati */}
         <div style={{
           position: 'fixed',
           inset: 0,
@@ -138,7 +191,6 @@ export default function Home() {
           zIndex: 1
         }}>
           
-          {/* Header */}
           <header style={{ 
             marginBottom: '50px', 
             textAlign: 'center',
@@ -146,7 +198,6 @@ export default function Home() {
             background: 'rgba(232, 224, 212, 0.5)',
             position: 'relative'
           }}>
-            {/* Linea superiore */}
             <div style={{
               width: '100%',
               height: '3px',
@@ -192,7 +243,6 @@ export default function Home() {
               Music for every moment
             </p>
 
-            {/* Linea inferiore */}
             <div style={{
               width: '100%',
               height: '3px',
@@ -201,7 +251,6 @@ export default function Home() {
             }} />
           </header>
 
-          {/* Error display */}
           {error && (
             <div style={{
               background: 'rgba(80, 60, 50, 0.1)',
@@ -216,7 +265,6 @@ export default function Home() {
             </div>
           )}
 
-          {/* Main Input Area */}
           {!result && (
             <div style={{
               background: 'rgba(255, 252, 245, 0.4)',
@@ -225,7 +273,6 @@ export default function Home() {
               marginBottom: '35px',
               position: 'relative'
             }}>
-              {/* Angolo piegato */}
               <div style={{
                 position: 'absolute',
                 top: 0,
@@ -296,7 +343,6 @@ export default function Home() {
             </div>
           )}
 
-          {/* Loading State */}
           {isAnalyzing && (
             <div style={{
               textAlign: 'center',
@@ -328,10 +374,8 @@ export default function Home() {
             </div>
           )}
 
-          {/* Results */}
           {result && (
             <div>
-              {/* Current Input Display */}
               <div style={{
                 background: 'rgba(255, 252, 245, 0.4)',
                 border: '2px solid #2a2420',
@@ -371,7 +415,6 @@ export default function Home() {
                 </button>
               </div>
 
-              {/* Location Info */}
               {result.interpretation && (
                 <div style={{
                   background: 'rgba(255, 252, 245, 0.4)',
@@ -422,30 +465,10 @@ export default function Home() {
                         }}>{result.interpretation.mood}</div>
                       </div>
                     )}
-                    {result.interpretation.region && (
-                      <div>
-                        <div style={{ 
-                          fontFamily: "'Courier Prime', monospace",
-                          fontSize: '10px', 
-                          color: '#6a655d', 
-                          marginBottom: '8px', 
-                          letterSpacing: '2px', 
-                          textTransform: 'uppercase' 
-                        }}>REGION</div>
-                        <div style={{ 
-                          fontFamily: "'Anton', sans-serif",
-                          fontSize: '22px', 
-                          color: '#5a554d',
-                          textTransform: 'uppercase',
-                          letterSpacing: '1px'
-                        }}>{result.interpretation.region}</div>
-                      </div>
-                    )}
                   </div>
                 </div>
               )}
 
-              {/* Playlist */}
               <div style={{
                 background: 'rgba(255, 252, 245, 0.4)',
                 border: '2px solid #2a2420',
@@ -519,6 +542,101 @@ export default function Home() {
                 </div>
               </div>
 
+              {/* Spotify Playlist Button */}
+              <div style={{
+                marginTop: '20px',
+                padding: '30px',
+                background: 'rgba(255, 252, 245, 0.4)',
+                border: '2px solid #2a2420',
+                textAlign: 'center'
+              }}>
+                {playlistCreated ? (
+                  <div>
+                    <p style={{
+                      fontFamily: "'Courier Prime', monospace",
+                      fontSize: '14px',
+                      color: '#1a1815',
+                      marginBottom: '15px'
+                    }}>
+                      ✓ Playlist created with {playlistCreated.tracksAdded} tracks!
+                    </p>
+                    
+                      href={playlistCreated.playlistUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'inline-block',
+                        background: '#1DB954',
+                        color: '#fff',
+                        padding: '14px 28px',
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        letterSpacing: '2px',
+                        textTransform: 'uppercase',
+                        textDecoration: 'none',
+                        borderRadius: '30px',
+                        fontFamily: "'Courier Prime', monospace"
+                      }}
+                    >
+                      OPEN IN SPOTIFY
+                    </a>
+                  </div>
+                ) : (
+                  <div>
+                    <p style={{
+                      fontFamily: "'Courier Prime', monospace",
+                      fontSize: '11px',
+                      color: '#6a655d',
+                      marginBottom: '15px',
+                      letterSpacing: '2px',
+                      textTransform: 'uppercase'
+                    }}>
+                      Save to your Spotify account
+                    </p>
+                    {spotifyToken ? (
+                      <button
+                        onClick={createSpotifyPlaylist}
+                        disabled={isCreatingPlaylist}
+                        style={{
+                          background: isCreatingPlaylist ? '#6a655d' : '#1DB954',
+                          border: 'none',
+                          color: '#fff',
+                          padding: '14px 28px',
+                          fontSize: '13px',
+                          fontWeight: 700,
+                          letterSpacing: '2px',
+                          textTransform: 'uppercase',
+                          cursor: isCreatingPlaylist ? 'not-allowed' : 'pointer',
+                          borderRadius: '30px',
+                          fontFamily: "'Courier Prime', monospace"
+                        }}
+                      >
+                        {isCreatingPlaylist ? 'CREATING...' : 'CREATE SPOTIFY PLAYLIST'}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={connectSpotify}
+                        style={{
+                          background: '#1DB954',
+                          border: 'none',
+                          color: '#fff',
+                          padding: '14px 28px',
+                          fontSize: '13px',
+                          fontWeight: 700,
+                          letterSpacing: '2px',
+                          textTransform: 'uppercase',
+                          cursor: 'pointer',
+                          borderRadius: '30px',
+                          fontFamily: "'Courier Prime', monospace"
+                        }}
+                      >
+                        CONNECT SPOTIFY
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+
               {/* Apple Music Links */}
               <div style={{
                 marginTop: '20px',
@@ -544,7 +662,7 @@ export default function Home() {
                   justifyContent: 'center'
                 }}>
                   {result.playlist?.map((track, i) => (
-                    <a
+                    
                       key={i}
                       href={`https://music.apple.com/search?term=${encodeURIComponent(track.artist + ' ' + track.title)}`}
                       target="_blank"
@@ -568,7 +686,6 @@ export default function Home() {
             </div>
           )}
 
-          {/* Example prompts */}
           {!result && !isAnalyzing && (
             <div>
               <p style={{
@@ -609,7 +726,6 @@ export default function Home() {
             </div>
           )}
 
-          {/* Footer */}
           <footer style={{
             marginTop: '60px',
             textAlign: 'center',
