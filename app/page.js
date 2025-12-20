@@ -219,15 +219,6 @@ export default function Home() {
               marginBottom: '35px',
               position: 'relative'
             }}>
-              <div style={{
-                position: 'absolute',
-                top: 0,
-                right: 0,
-                width: '30px',
-                height: '30px',
-                background: 'linear-gradient(135deg, transparent 50%, rgba(200, 190, 175, 0.8) 50%)',
-                boxShadow: '-2px 2px 5px rgba(0,0,0,0.1)'
-              }} />
               
               <textarea
                 value={input}
