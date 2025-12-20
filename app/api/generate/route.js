@@ -21,7 +21,7 @@ export async function POST(request) {
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-opus-4-5-20251101',
+        model: 'claude-sonnet-4-20250514',
         max_tokens: 4000,
         messages: [
           {
@@ -95,7 +95,7 @@ Respond ONLY with this JSON structure:
     const cleanContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     const result = JSON.parse(cleanContent);
 
-    console.log('=== OPUS 4.5 PLAYLIST ===');
+    console.log('=== PLAYLIST GENERATED ===');
     console.log('Location:', result.location);
     console.log('Mood:', result.mood);
     console.log('Tracks:', result.playlist?.length);
