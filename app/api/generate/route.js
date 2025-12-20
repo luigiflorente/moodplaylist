@@ -2,44 +2,6 @@ function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function getSpotifyToken() {
-  const response = await fetch('https://accounts.spotify.com/api/token', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Authorization': 'Basic ' + Buffer.from(
-        process.env.SPOTIFY_CLIENT_ID + ':' + process.env.SPOTIFY_CLIENT_SECRET
-      ).toString('base64')
-    },
-    body: 'grant_type=client_credentials'
-  });
-  
-  const data = await response.json();
-  return data.access_token;
-}
-
-async function searchSpotify(token, artist, title) {
-  const query = encodeURIComponent(`track:${title} artist:${artist}`);
-  const response = await fetch(
-    `https://api.spotify.com/v1/search?q=${query}&type=track&limit=1`,
-    {
-      headers: { 'Authorization': `Bearer ${token}` }
-    }
-  );
-  
-  const data = await response.json();
-  if (data.tracks?.items?.length > 0) {
-    const track = data.tracks.items[0];
-    return {
-      title: track.name,
-      artist: track.artists[0].name,
-      spotifyId: track.id,
-      year: track.album.release_date?.substring(0, 4) || 'N/A'
-    };
-  }
-  return null;
-}
-
 async function analyzeTrack(artist, title) {
   try {
     const url = `https://track-analysis.p.rapidapi.com/pktx/analysis?song=${encodeURIComponent(title)}&artist=${encodeURIComponent(artist)}`;
@@ -180,7 +142,7 @@ PARAMETER RULES:
 - For CALM moods: energyMax (e.g. 50)
 - For ENERGETIC moods: energyMin (e.g. 50)
 - Traditional/folk music from Eastern Europe is usually MINOR even when warm/nostalgic
-- For FAMILY/NOSTALGIC gatherings: be flexible, don't set happinessMin (some nostalgic songs are sad)
+- For FAMILY/NOSTALGIC gatherings: be flexible with parameters
 
 Respond ONLY with JSON:
 {
@@ -240,13 +202,12 @@ Use these artists and similar ones that fit the vibe:
 ${artistList}
 
 RULES:
-1. Suggest 80 tracks total
+1. Suggest 60 tracks total
 2. At least 60% should be from LOCAL artists of the identified location/culture
-3. Use FAMOUS, WELL-KNOWN tracks that definitely exist on Spotify
-4. Write artist names and song titles as accurately as possible
-5. Mix different eras and styles that fit the mood
-6. Think about what would ACTUALLY play in this situation
-7. Prioritize songs that are POPULAR and RECOGNIZABLE
+3. Use REAL, EXISTING tracks - be accurate with titles and artist names
+4. Mix different eras and styles that fit the mood
+5. Think about what would ACTUALLY play in this situation
+6. Include both famous hits and beloved deep cuts
 
 Respond ONLY with JSON:
 {
@@ -267,27 +228,21 @@ Respond ONLY with JSON:
     console.log('=== STEP 2: TRACKS ===');
     console.log('Total suggested:', tracksInfo.suggestedTracks?.length);
 
-    const spotifyToken = await getSpotifyToken();
-    
     const params = contextInfo.parameters || {};
     
     const allAnalyzedTracks = [];
     let checkedCount = 0;
-    let notOnSpotify = 0;
     let soundNetFailed = 0;
     
-    // Target: get 25 analyzed tracks, then stop
     const TARGET_ANALYZED = 25;
     const MAX_CHECKS = 60;
     
     for (const track of tracksInfo.suggestedTracks || []) {
-      // Stop if we have enough analyzed tracks
       if (allAnalyzedTracks.length >= TARGET_ANALYZED) {
         console.log(`Reached target of ${TARGET_ANALYZED} analyzed tracks, stopping early`);
         break;
       }
       
-      // Safety limit
       if (checkedCount >= MAX_CHECKS) {
         console.log(`Reached max checks limit of ${MAX_CHECKS}`);
         break;
@@ -295,48 +250,37 @@ Respond ONLY with JSON:
       
       checkedCount++;
       
-      const spotifyTrack = await searchSpotify(spotifyToken, track.artist, track.title);
-      
-      if (!spotifyTrack) {
-        console.log(`Not on Spotify: ${track.title} - ${track.artist}`);
-        notOnSpotify++;
-        continue;
-      }
-      
-      // Reduced delay for faster processing
       await delay(900);
       
       const audioParams = await analyzeTrack(track.artist, track.title);
       
       if (!audioParams) {
-        console.log(`SoundNet failed: ${track.title}`);
+        console.log(`SoundNet failed: ${track.title} - ${track.artist}`);
         soundNetFailed++;
         continue;
       }
       
       const isDuplicate = allAnalyzedTracks.some(
-        t => t.spotifyId === spotifyTrack.spotifyId
+        t => t.title.toLowerCase() === track.title.toLowerCase() && 
+             t.artist.toLowerCase() === track.artist.toLowerCase()
       );
       
       if (!isDuplicate) {
         allAnalyzedTracks.push({
-          title: spotifyTrack.title,
-          artist: spotifyTrack.artist,
-          spotifyId: spotifyTrack.spotifyId,
-          year: spotifyTrack.year,
+          title: track.title,
+          artist: track.artist,
           key: audioParams.key,
           mode: audioParams.mode,
           tempo: audioParams.tempo,
           happiness: audioParams.happiness,
           energy: audioParams.energy
         });
-        console.log(`Analyzed [${allAnalyzedTracks.length}/${TARGET_ANALYZED}]: ${spotifyTrack.title} - ${spotifyTrack.artist} (happiness: ${audioParams.happiness}, mode: ${audioParams.mode})`);
+        console.log(`Analyzed [${allAnalyzedTracks.length}/${TARGET_ANALYZED}]: ${track.title} - ${track.artist} (happiness: ${audioParams.happiness}, mode: ${audioParams.mode})`);
       }
     }
 
     console.log('=== FILTERING WITH FALLBACK ===');
     console.log('Total analyzed tracks:', allAnalyzedTracks.length);
-    console.log('Not on Spotify:', notOnSpotify);
     console.log('SoundNet failed:', soundNetFailed);
     console.log('Tracks checked:', checkedCount);
 
