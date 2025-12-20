@@ -76,8 +76,6 @@ async function analyzeTrack(artist, title) {
 function matchesParameters(trackInfo, params, strictLevel) {
   if (!params || Object.keys(params).length === 0) return true;
   
-  // strictLevel: 3 = all filters, 2 = no mode, 1 = only energy, 0 = no filter
-  
   if (strictLevel >= 3 && params.mode && trackInfo.mode) {
     if (trackInfo.mode.toLowerCase() !== params.mode.toLowerCase()) {
       return false;
@@ -143,57 +141,53 @@ YOUR TASK: Think like someone who LIVES this experience. Don't just list artists
 FOR EACH PLACE, CONSIDER:
 1. VISUAL ATMOSPHERE: Architecture, light, colors, decay or beauty
 2. HISTORY & SOUL: What happened here? What emotions does it carry?
-3. WHAT YOU HEAR: In bars, cafes, streets, car radios
+3. WHAT YOU HEAR: In bars, cafes, streets, car radios, family homes
 4. THE FEELING: Not geography, but emotion
 
 EXAMPLES OF EXPERIENTIAL THINKING:
 
 KRAKOW at night is NOT just "Polish classical music". It's:
 - Smoky jazz bars in Kazimierz (Tomasz Stańko, Marcin Wasilewski)
-- Klezmer echoing through Jewish quarter (Kroke, The Klezmatics)
-- Decadent beauty, peeling walls, amber streetlights
+- Klezmer echoing through Jewish quarter (Kroke)
 - Post-soviet melancholy (Molchat Doma, Motorama)
 - Dark jazz for cold nights (Bohren & Der Club of Gore)
 - The weight of history (Górecki, Preisner - but also Portishead, Radiohead)
 
+POLISH FAMILY GATHERING is NOT art music. It's:
+- Classic Polish singers everyone knows (Czesław Niemen, Marek Grechuta, Anna German)
+- Folk ensembles (Mazowsze, Śląsk)
+- Beloved pop stars (Krzysztof Krawczyk, Maryla Rodowicz)
+- Songs that cross generations
+
 NAPLES is NOT just "Italian pop". It's:
 - Blues and soul (Pino Daniele, James Senese)
 - Street energy, chaos, passion
-- Mediterranean melancholy meets joy
-- Nu Genea, Napoli Centrale, but also Manu Chao, Buena Vista Social Club
+- Nu Genea, Napoli Centrale, Enzo Avitabile
 
 LISBON is NOT just "Fado". It's:
 - Saudade - longing for something lost
-- Trams, hills, faded tiles, Atlantic mist
-- Amália Rodrigues, but also Portishead, Chet Baker, Billie Holiday
+- Amália Rodrigues, Madredeus, Ana Moura, Mariza
 
-Think: "What would play in a bar in this place that would feel PERFECT?"
+Think: "What would ACTUALLY play in this situation?"
 
 IMPORTANT - PARAMETERS USE VALUES FROM 0 TO 100:
 - happiness: 0 = very sad, 50 = neutral, 100 = very happy
 - energy: 0 = very calm, 50 = moderate, 100 = very energetic
 
 PARAMETER RULES:
-- For MELANCHOLIC/SAD moods: use happinessMax (e.g. 50), but DO NOT use happinessMin
-- For HAPPY/ENERGETIC moods: use happinessMin (e.g. 40), no happinessMax needed
-- For CALM moods: use energyMax (e.g. 50)
-- For ENERGETIC moods: use energyMin (e.g. 50)
-- Mode "minor" = sad/melancholic, "major" = happy/bright
-- IMPORTANT: Traditional/folk music from Eastern Europe is usually MINOR even when warm/nostalgic
-
-Example parameters:
-- Melancholic night: mode "minor", happinessMax 50, energyMax 70
-- Happy sunny day: mode "major", happinessMin 40, energyMin 40
-- Warm nostalgic (Polish/Eastern European): mode "minor", happinessMax 60, energyMax 60
-- Party energy: mode "major", happinessMin 50, energyMin 60
+- For MELANCHOLIC/SAD moods: mode "minor", happinessMax (e.g. 50)
+- For HAPPY/WARM moods: mode "major", happinessMin (e.g. 40)
+- For CALM moods: energyMax (e.g. 50)
+- For ENERGETIC moods: energyMin (e.g. 50)
+- Traditional/folk music from Eastern Europe is usually MINOR even when warm/nostalgic
 
 Respond ONLY with JSON:
 {
   "location": "the place identified (or 'unspecified' if none)",
   "atmosphere": "describe the visual/emotional atmosphere in 2-3 sentences",
   "mood": "the mood in 2-3 words",
-  "soundscape": "what music you'd hear in bars/streets in this place",
-  "artists": ["mix of local AND international artists that FIT this atmosphere - 15-20 artists"],
+  "soundscape": "what music you'd hear in this specific situation",
+  "artists": ["mix of local AND international artists that FIT - 20-30 artists"],
   "parameters": {
     "mode": "minor" or "major" or null,
     "happinessMax": number 0-100 or null,
@@ -231,7 +225,7 @@ Respond ONLY with JSON:
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 4000,
+        max_tokens: 8000,
         messages: [
           {
             role: 'user',
@@ -241,66 +235,21 @@ ATMOSPHERE: ${contextInfo.atmosphere}
 MOOD: ${contextInfo.mood}
 SOUNDSCAPE: ${contextInfo.soundscape}
 
-Use these artists (mix of local and international that FIT the vibe):
+Use these artists and similar ones that fit the vibe:
 ${artistList}
 
-CRITICAL: At least 50% of tracks must be from LOCAL artists of the identified location!
-
-VERIFIED TRACKS DATABASE - USE THESE EXACT TITLES:
-
-POLISH ARTISTS:
-- Tomasz Stańko: "Suspended Variation VI", "Tale", "Etiuda Baletowa", "Litania", "Sleep Safe and Warm", "Dark Eyes"
-- Marcin Wasilewski Trio: "January", "Night Train to You", "Sudovian Dance", "Glimmer of Hope", "Three Reflections", "Austin"
-- Kroke: "Ajde Jano", "The Secrets of the Life Tree", "Out of Sight", "Time", "Eden", "Quartet"
-- Zbigniew Preisner: "Lacrimosa", "Van den Budenmayer: Concerto en mi mineur", "Requiem for My Friend", "Song for the Unification of Europe"
-- Henryk Górecki: "Symphony No. 3, Op. 36: II. Lento e largo"
-- Wojciech Kilar: "Exodus", "Polonez", "Bram Stoker's Dracula"
-- Krzysztof Penderecki: "Threnody for the Victims of Hiroshima", "Polymorphia"
-- Leszek Możdżer: "Komeda", "Preludium"
-- Skalpel: "1958", "Break In", "Sculpture"
-
-EASTERN EUROPEAN:
-- Molchat Doma: "Sudno (Boris Ryzhy)", "Volny", "Toska", "Discoteque", "Na Dne"
-- Motorama: "Heavy Wave", "Alps", "Ghost", "Calendar"
-
-NAPLES/SOUTHERN ITALY:
-- Pino Daniele: "Napule è", "Quando", "Je so' pazzo", "Nero a metà", "Yes I Know My Way"
-- James Senese: "Je te vurria vasà"
-- Nu Genea: "Marechià", "Bar Mediterraneo", "Nuova Napoli"
-- Napoli Centrale: "Campagna", "Ngazzate Nire"
-- Enzo Avitabile: "Soul Express", "Black Tarantella"
-
-LISBON/PORTUGAL:
-- Amália Rodrigues: "Estranha Forma de Vida", "Com Que Voz", "Povo Que Lavas No Rio"
-- Madredeus: "O Pastor", "Ainda", "O Mar"
-- Ana Moura: "Desfado", "Leva-me aos Fados"
-- Mísia: "Paixão", "Ruas"
-- Mariza: "Chuva", "Há Festa na Mouraria"
-
-INTERNATIONAL (use for mood matching):
-- Portishead: "Glory Box", "Sour Times", "Wandering Star", "Roads", "The Rip"
-- Radiohead: "Everything In Its Right Place", "Exit Music (For a Film)", "How to Disappear Completely", "Pyramid Song", "No Surprises"
-- Massive Attack: "Teardrop", "Angel", "Unfinished Sympathy", "Protection"
-- Bohren & Der Club of Gore: "Constant Fear", "Prowler", "Midnight Black Earth", "On Demon Wings"
-- Nils Frahm: "Says", "Re", "All Melody", "My Friend the Forest"
-- Max Richter: "On the Nature of Daylight", "Spring 1", "Written on the Sky", "Dream 3"
-- Agnes Obel: "Riverside", "Familiar", "The Curse", "Aventine"
-- Bonobo: "Black Sands", "Kong", "Kerala", "Cirrus"
-- GoGo Penguin: "Raven", "Hopopono", "Murmuration", "Garden Dog Barbecue"
-- Kiasmos: "Blurred", "Thrown", "Gaunt"
-- Ólafur Arnalds: "Near Light", "Saman", "Nyepi"
-- Thom Yorke: "Suspirium", "Unmade", "Dawn Chorus"
-
 RULES:
-1. Use ONLY tracks from the database above - do not invent titles!
-2. At least 50% must be LOCAL artists from the identified location
-3. Suggest 50 tracks total
-4. Write artist and title EXACTLY as shown above
+1. Suggest 100 tracks total
+2. At least 60% should be from LOCAL artists of the identified location/culture
+3. Use FAMOUS, WELL-KNOWN tracks that definitely exist on Spotify
+4. Write artist names and song titles as accurately as possible
+5. Mix different eras and styles that fit the mood
+6. Think about what would ACTUALLY play in this situation
 
 Respond ONLY with JSON:
 {
   "suggestedTracks": [
-    {"title": "EXACT title from database", "artist": "EXACT artist name"}
+    {"title": "song title", "artist": "artist name"}
   ]
 }`
           }
@@ -320,12 +269,14 @@ Respond ONLY with JSON:
     
     const params = contextInfo.parameters || {};
     
-    // Collect all tracks with their audio parameters first
     const allAnalyzedTracks = [];
     let checkedCount = 0;
+    let notOnSpotify = 0;
+    let soundNetFailed = 0;
     
     for (const track of tracksInfo.suggestedTracks || []) {
-      if (checkedCount >= 50) break;
+      if (allAnalyzedTracks.length >= 50) break;
+      if (checkedCount >= 100) break;
       
       checkedCount++;
       
@@ -333,6 +284,7 @@ Respond ONLY with JSON:
       
       if (!spotifyTrack) {
         console.log(`Not on Spotify: ${track.title} - ${track.artist}`);
+        notOnSpotify++;
         continue;
       }
       
@@ -342,10 +294,10 @@ Respond ONLY with JSON:
       
       if (!audioParams) {
         console.log(`SoundNet failed: ${track.title}`);
+        soundNetFailed++;
         continue;
       }
       
-      // Check for duplicates
       const isDuplicate = allAnalyzedTracks.some(
         t => t.spotifyId === spotifyTrack.spotifyId
       );
@@ -368,8 +320,9 @@ Respond ONLY with JSON:
 
     console.log('=== FILTERING WITH FALLBACK ===');
     console.log('Total analyzed tracks:', allAnalyzedTracks.length);
+    console.log('Not on Spotify:', notOnSpotify);
+    console.log('SoundNet failed:', soundNetFailed);
 
-    // Try filtering with decreasing strictness until we have enough tracks
     let verifiedTracks = [];
     let strictLevel = 3;
     
@@ -388,7 +341,6 @@ Respond ONLY with JSON:
       }
     }
 
-    // Take max 17 tracks
     verifiedTracks = verifiedTracks.slice(0, 17);
 
     console.log('=== FINAL RESULT ===');
