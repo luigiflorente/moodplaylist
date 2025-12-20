@@ -67,12 +67,12 @@ export default function Home() {
   return (
     <>
       <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Special+Elite&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Anton&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap');
       `}</style>
       
       <div style={{
         minHeight: '100vh',
-        background: '#1a1613',
+        background: '#e8e0d4',
         position: 'relative',
         overflow: 'hidden'
       }}>
@@ -81,122 +81,136 @@ export default function Home() {
           position: 'fixed',
           inset: 0,
           backgroundImage: `
-            url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E"),
-            radial-gradient(ellipse at 30% 20%, rgba(180, 140, 90, 0.08) 0%, transparent 50%),
-            radial-gradient(ellipse at 70% 80%, rgba(120, 80, 50, 0.06) 0%, transparent 50%)
+            url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='6' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")
           `,
-          opacity: 0.15,
+          opacity: 0.12,
           pointerEvents: 'none'
         }} />
 
         {/* Macchie di caffè */}
         <div style={{
           position: 'fixed',
-          top: '15%',
-          right: '10%',
-          width: '150px',
-          height: '150px',
+          top: '8%',
+          left: '12%',
+          width: '180px',
+          height: '180px',
           borderRadius: '50%',
-          background: 'radial-gradient(ellipse, rgba(101, 67, 33, 0.1) 0%, transparent 70%)',
-          filter: 'blur(20px)',
+          background: 'radial-gradient(ellipse, rgba(139, 119, 101, 0.25) 0%, rgba(139, 119, 101, 0.1) 40%, transparent 70%)',
+          filter: 'blur(2px)',
           pointerEvents: 'none'
         }} />
         <div style={{
           position: 'fixed',
-          bottom: '25%',
-          left: '5%',
+          bottom: '15%',
+          right: '8%',
+          width: '140px',
+          height: '140px',
+          borderRadius: '50%',
+          background: 'radial-gradient(ellipse, rgba(101, 85, 72, 0.2) 0%, rgba(101, 85, 72, 0.08) 40%, transparent 70%)',
+          filter: 'blur(2px)',
+          pointerEvents: 'none'
+        }} />
+        <div style={{
+          position: 'fixed',
+          top: '45%',
+          right: '20%',
           width: '100px',
           height: '100px',
           borderRadius: '50%',
-          background: 'radial-gradient(ellipse, rgba(139, 90, 43, 0.08) 0%, transparent 70%)',
-          filter: 'blur(15px)',
+          background: 'radial-gradient(ellipse, rgba(120, 100, 80, 0.15) 0%, transparent 60%)',
+          filter: 'blur(3px)',
+          pointerEvents: 'none'
+        }} />
+
+        {/* Bordi scuri consumati */}
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          boxShadow: 'inset 0 0 150px rgba(60, 50, 40, 0.4)',
           pointerEvents: 'none'
         }} />
 
         <div style={{
-          maxWidth: '750px',
+          maxWidth: '700px',
           margin: '0 auto',
-          padding: '60px 25px',
+          padding: '50px 25px',
           position: 'relative',
           zIndex: 1
         }}>
           
-          {/* Header - stile carta invecchiata */}
+          {/* Header */}
           <header style={{ 
             marginBottom: '50px', 
             textAlign: 'center',
-            padding: '50px 40px',
-            background: 'linear-gradient(175deg, rgba(45, 36, 28, 0.95) 0%, rgba(30, 24, 18, 0.98) 100%)',
-            borderRadius: '3px',
-            position: 'relative',
-            boxShadow: '0 10px 40px rgba(0,0,0,0.4)',
-            border: '1px solid rgba(139, 90, 43, 0.2)'
+            padding: '45px 35px',
+            background: 'rgba(232, 224, 212, 0.5)',
+            position: 'relative'
           }}>
-            {/* Bordo carta consumata */}
+            {/* Linea superiore */}
             <div style={{
-              position: 'absolute',
-              inset: 0,
-              borderRadius: '3px',
-              boxShadow: 'inset 0 0 60px rgba(0,0,0,0.3)',
-              pointerEvents: 'none'
+              width: '100%',
+              height: '3px',
+              background: '#2a2420',
+              marginBottom: '25px'
             }} />
             
-            <p style={{
-              fontFamily: "'Special Elite', 'Courier New', monospace",
-              fontSize: '11px',
-              letterSpacing: '3px',
-              color: '#8b7355',
-              marginBottom: '20px',
-              textTransform: 'uppercase'
-            }}>
-              Est. 2024
-            </p>
-            
             <h1 style={{
-              fontFamily: "'Cormorant Garamond', 'Garamond', Georgia, serif",
-              fontSize: 'clamp(36px, 8vw, 56px)',
-              fontWeight: 300,
-              margin: '0 0 15px 0',
-              lineHeight: 1,
-              color: '#e8dcc8',
-              letterSpacing: '4px',
-              fontStyle: 'italic'
+              fontFamily: "'Anton', 'Impact', sans-serif",
+              fontSize: 'clamp(42px, 12vw, 72px)',
+              fontWeight: 400,
+              margin: '0',
+              lineHeight: 0.9,
+              color: '#1a1815',
+              letterSpacing: '2px',
+              textTransform: 'uppercase',
+              textShadow: '2px 2px 0 rgba(232, 224, 212, 0.8)'
             }}>
-              Mood Playlist
+              MOOD
+            </h1>
+            <h1 style={{
+              fontFamily: "'Anton', 'Impact', sans-serif",
+              fontSize: 'clamp(42px, 12vw, 72px)',
+              fontWeight: 400,
+              margin: '0',
+              lineHeight: 0.9,
+              color: '#1a1815',
+              letterSpacing: '2px',
+              textTransform: 'uppercase',
+              textShadow: '2px 2px 0 rgba(232, 224, 212, 0.8)'
+            }}>
+              PLAYLIST
             </h1>
             
             <p style={{
-              fontFamily: "'Cormorant Garamond', Georgia, serif",
-              fontSize: '15px',
-              color: '#9a8978',
-              margin: 0,
-              fontStyle: 'italic',
-              letterSpacing: '1px'
+              fontFamily: "'Courier Prime', 'Courier New', monospace",
+              fontSize: '14px',
+              color: '#4a4540',
+              margin: '20px 0 0 0',
+              letterSpacing: '3px',
+              textTransform: 'uppercase'
             }}>
               Musica per ogni momento
             </p>
 
-            {/* Linea decorativa */}
+            {/* Linea inferiore */}
             <div style={{
-              width: '60px',
-              height: '1px',
-              background: 'linear-gradient(90deg, transparent, rgba(139, 90, 43, 0.5), transparent)',
-              margin: '25px auto 0'
+              width: '100%',
+              height: '3px',
+              background: '#2a2420',
+              marginTop: '25px'
             }} />
           </header>
 
           {/* Error display */}
           {error && (
             <div style={{
-              background: 'rgba(120, 60, 40, 0.2)',
-              border: '1px solid rgba(120, 60, 40, 0.3)',
-              borderRadius: '3px',
+              background: 'rgba(80, 60, 50, 0.1)',
+              border: '2px solid #4a4540',
               padding: '18px 22px',
               marginBottom: '25px',
-              color: '#c9a088',
-              fontFamily: "'Cormorant Garamond', Georgia, serif",
-              fontSize: '15px',
-              fontStyle: 'italic'
+              fontFamily: "'Courier Prime', monospace",
+              color: '#3a3530',
+              fontSize: '14px'
             }}>
               {error}
             </div>
@@ -205,20 +219,21 @@ export default function Home() {
           {/* Main Input Area */}
           {!result && (
             <div style={{
-              background: 'linear-gradient(175deg, rgba(45, 36, 28, 0.9) 0%, rgba(30, 24, 18, 0.95) 100%)',
-              border: '1px solid rgba(139, 90, 43, 0.15)',
-              borderRadius: '3px',
-              padding: '40px 35px',
+              background: 'rgba(255, 252, 245, 0.4)',
+              border: '2px solid #2a2420',
+              padding: '30px',
               marginBottom: '35px',
-              boxShadow: '0 8px 30px rgba(0,0,0,0.3)',
               position: 'relative'
             }}>
+              {/* Angolo piegato */}
               <div style={{
                 position: 'absolute',
-                inset: 0,
-                borderRadius: '3px',
-                boxShadow: 'inset 0 0 40px rgba(0,0,0,0.2)',
-                pointerEvents: 'none'
+                top: 0,
+                right: 0,
+                width: '30px',
+                height: '30px',
+                background: 'linear-gradient(135deg, transparent 50%, rgba(200, 190, 175, 0.8) 50%)',
+                boxShadow: '-2px 2px 5px rgba(0,0,0,0.1)'
               }} />
               
               <textarea
@@ -228,22 +243,18 @@ export default function Home() {
                 disabled={isAnalyzing}
                 style={{
                   width: '100%',
-                  minHeight: '130px',
-                  background: 'rgba(20, 16, 12, 0.6)',
+                  minHeight: '120px',
+                  background: 'transparent',
                   border: 'none',
-                  borderBottom: '1px solid rgba(139, 90, 43, 0.2)',
-                  borderRadius: '0',
+                  borderBottom: '1px solid #3a3530',
                   outline: 'none',
-                  color: '#d4c4a8',
+                  color: '#1a1815',
                   fontSize: '18px',
-                  fontFamily: "'Cormorant Garamond', Georgia, serif",
+                  fontFamily: "'Courier Prime', 'Courier New', monospace",
                   lineHeight: 1.8,
                   resize: 'none',
-                  padding: '20px 5px',
-                  opacity: isAnalyzing ? 0.5 : 1,
-                  fontStyle: 'italic',
-                  position: 'relative',
-                  zIndex: 1
+                  padding: '15px 0',
+                  opacity: isAnalyzing ? 0.5 : 1
                 }}
               />
               
@@ -251,14 +262,12 @@ export default function Home() {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                marginTop: '25px',
-                position: 'relative',
-                zIndex: 1
+                marginTop: '20px'
               }}>
                 <span style={{
-                  fontFamily: "'Special Elite', monospace",
-                  fontSize: '11px',
-                  color: '#6b5d4d',
+                  fontFamily: "'Courier Prime', monospace",
+                  fontSize: '12px',
+                  color: '#6a655d',
                   letterSpacing: '1px'
                 }}>
                   {input.length > 0 ? `${input.length} caratteri` : '...'}
@@ -268,22 +277,20 @@ export default function Home() {
                   onClick={handleAnalyze}
                   disabled={!input.trim() || isAnalyzing}
                   style={{
-                    background: input.trim() && !isAnalyzing 
-                      ? 'rgba(139, 90, 43, 0.3)'
-                      : 'transparent',
-                    border: '1px solid rgba(139, 90, 43, 0.4)',
-                    color: input.trim() && !isAnalyzing ? '#d4c4a8' : '#6b5d4d',
-                    padding: '14px 30px',
-                    fontSize: '12px',
-                    letterSpacing: '2px',
+                    background: input.trim() && !isAnalyzing ? '#1a1815' : 'transparent',
+                    border: '2px solid #1a1815',
+                    color: input.trim() && !isAnalyzing ? '#e8e0d4' : '#6a655d',
+                    padding: '12px 28px',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    letterSpacing: '3px',
                     textTransform: 'uppercase',
                     cursor: input.trim() && !isAnalyzing ? 'pointer' : 'not-allowed',
-                    borderRadius: '2px',
-                    transition: 'all 0.3s ease',
-                    fontFamily: "'Special Elite', monospace"
+                    fontFamily: "'Courier Prime', monospace",
+                    transition: 'all 0.2s ease'
                   }}
                 >
-                  {isAnalyzing ? 'Attendi...' : 'Genera'}
+                  {isAnalyzing ? 'ATTENDI...' : 'GENERA'}
                 </button>
               </div>
             </div>
@@ -293,30 +300,30 @@ export default function Home() {
           {isAnalyzing && (
             <div style={{
               textAlign: 'center',
-              padding: '70px 30px',
-              background: 'linear-gradient(175deg, rgba(45, 36, 28, 0.9) 0%, rgba(30, 24, 18, 0.95) 100%)',
-              borderRadius: '3px',
-              border: '1px solid rgba(139, 90, 43, 0.15)'
+              padding: '60px 30px',
+              background: 'rgba(255, 252, 245, 0.4)',
+              border: '2px solid #2a2420'
             }}>
               <div style={{
-                fontFamily: "'Cormorant Garamond', Georgia, serif",
+                fontFamily: "'Anton', sans-serif",
                 fontSize: '24px',
-                color: '#c9a227',
+                color: '#1a1815',
                 marginBottom: '15px',
-                fontStyle: 'italic'
+                letterSpacing: '8px'
               }}>
-                ◦ ◦ ◦
+                • • •
               </div>
               <p style={{
-                fontFamily: "'Cormorant Garamond', Georgia, serif",
-                color: '#9a8978',
-                fontSize: '16px',
+                fontFamily: "'Courier Prime', monospace",
+                color: '#4a4540',
+                fontSize: '14px',
                 margin: 0,
-                fontStyle: 'italic'
+                letterSpacing: '2px',
+                textTransform: 'uppercase'
               }}>
                 {phase === 'analyzing' && 'Leggo tra le righe...'}
-                {phase === 'translating' && 'Cerco le melodie giuste...'}
-                {phase === 'generating' && 'Compongo la tua playlist...'}
+                {phase === 'translating' && 'Cerco le melodie...'}
+                {phase === 'generating' && 'Compongo la playlist...'}
               </p>
             </div>
           )}
@@ -326,113 +333,111 @@ export default function Home() {
             <div>
               {/* Current Input Display */}
               <div style={{
-                background: 'linear-gradient(175deg, rgba(45, 36, 28, 0.9) 0%, rgba(30, 24, 18, 0.95) 100%)',
-                border: '1px solid rgba(139, 90, 43, 0.15)',
-                borderRadius: '3px',
-                padding: '30px 35px',
-                marginBottom: '25px',
+                background: 'rgba(255, 252, 245, 0.4)',
+                border: '2px solid #2a2420',
+                padding: '25px 30px',
+                marginBottom: '20px',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 flexWrap: 'wrap',
-                gap: '20px'
+                gap: '15px'
               }}>
-                <div style={{ flex: 1 }}>
-                  <p style={{
-                    margin: 0,
-                    fontFamily: "'Cormorant Garamond', Georgia, serif",
-                    fontSize: '18px',
-                    color: '#d4c4a8',
-                    fontStyle: 'italic',
-                    lineHeight: 1.6
-                  }}>
-                    "{input}"
-                  </p>
-                </div>
+                <p style={{
+                  margin: 0,
+                  fontFamily: "'Courier Prime', monospace",
+                  fontSize: '16px',
+                  color: '#1a1815',
+                  flex: 1
+                }}>
+                  "{input}"
+                </p>
                 <button
                   onClick={resetAll}
                   style={{
                     background: 'transparent',
-                    border: '1px solid rgba(139, 90, 43, 0.3)',
-                    color: '#8b7355',
-                    padding: '10px 20px',
+                    border: '2px solid #3a3530',
+                    color: '#3a3530',
+                    padding: '8px 18px',
                     fontSize: '11px',
-                    letterSpacing: '1px',
+                    fontWeight: 700,
+                    letterSpacing: '2px',
                     textTransform: 'uppercase',
                     cursor: 'pointer',
-                    borderRadius: '2px',
-                    fontFamily: "'Special Elite', monospace"
+                    fontFamily: "'Courier Prime', monospace"
                   }}
                 >
-                  Ricomincia
+                  NUOVO
                 </button>
               </div>
 
               {/* Location Info */}
               {result.interpretation && (
                 <div style={{
-                  background: 'linear-gradient(175deg, rgba(45, 36, 28, 0.9) 0%, rgba(30, 24, 18, 0.95) 100%)',
-                  border: '1px solid rgba(139, 90, 43, 0.15)',
-                  borderRadius: '3px',
-                  padding: '35px',
-                  marginBottom: '25px'
+                  background: 'rgba(255, 252, 245, 0.4)',
+                  border: '2px solid #2a2420',
+                  padding: '30px',
+                  marginBottom: '20px'
                 }}>
                   <div style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
                     gap: '25px'
                   }}>
                     {result.interpretation.location && (
                       <div>
                         <div style={{ 
-                          fontFamily: "'Special Elite', monospace",
+                          fontFamily: "'Courier Prime', monospace",
                           fontSize: '10px', 
-                          color: '#6b5d4d', 
+                          color: '#6a655d', 
                           marginBottom: '8px', 
                           letterSpacing: '2px', 
                           textTransform: 'uppercase' 
-                        }}>Luogo</div>
+                        }}>LUOGO</div>
                         <div style={{ 
-                          fontFamily: "'Cormorant Garamond', Georgia, serif",
-                          fontSize: '20px', 
-                          color: '#e8dcc8',
-                          fontStyle: 'italic'
+                          fontFamily: "'Anton', sans-serif",
+                          fontSize: '22px', 
+                          color: '#1a1815',
+                          textTransform: 'uppercase',
+                          letterSpacing: '1px'
                         }}>{result.interpretation.location}</div>
                       </div>
                     )}
                     {result.interpretation.mood && (
                       <div>
                         <div style={{ 
-                          fontFamily: "'Special Elite', monospace",
+                          fontFamily: "'Courier Prime', monospace",
                           fontSize: '10px', 
-                          color: '#6b5d4d', 
+                          color: '#6a655d', 
                           marginBottom: '8px', 
                           letterSpacing: '2px', 
                           textTransform: 'uppercase' 
-                        }}>Mood</div>
+                        }}>MOOD</div>
                         <div style={{ 
-                          fontFamily: "'Cormorant Garamond', Georgia, serif",
-                          fontSize: '20px', 
-                          color: '#c9a227',
-                          fontStyle: 'italic'
+                          fontFamily: "'Anton', sans-serif",
+                          fontSize: '22px', 
+                          color: '#3a3530',
+                          textTransform: 'uppercase',
+                          letterSpacing: '1px'
                         }}>{result.interpretation.mood}</div>
                       </div>
                     )}
                     {result.interpretation.region && (
                       <div>
                         <div style={{ 
-                          fontFamily: "'Special Elite', monospace",
+                          fontFamily: "'Courier Prime', monospace",
                           fontSize: '10px', 
-                          color: '#6b5d4d', 
+                          color: '#6a655d', 
                           marginBottom: '8px', 
                           letterSpacing: '2px', 
                           textTransform: 'uppercase' 
-                        }}>Regione</div>
+                        }}>REGIONE</div>
                         <div style={{ 
-                          fontFamily: "'Cormorant Garamond', Georgia, serif",
-                          fontSize: '20px', 
-                          color: '#a89078',
-                          fontStyle: 'italic'
+                          fontFamily: "'Anton', sans-serif",
+                          fontSize: '22px', 
+                          color: '#5a554d',
+                          textTransform: 'uppercase',
+                          letterSpacing: '1px'
                         }}>{result.interpretation.region}</div>
                       </div>
                     )}
@@ -442,24 +447,24 @@ export default function Home() {
 
               {/* Playlist */}
               <div style={{
-                background: 'linear-gradient(175deg, rgba(45, 36, 28, 0.9) 0%, rgba(30, 24, 18, 0.95) 100%)',
-                border: '1px solid rgba(139, 90, 43, 0.15)',
-                borderRadius: '3px',
+                background: 'rgba(255, 252, 245, 0.4)',
+                border: '2px solid #2a2420',
                 overflow: 'hidden'
               }}>
                 <div style={{
-                  padding: '25px 35px',
-                  borderBottom: '1px solid rgba(139, 90, 43, 0.1)'
+                  padding: '20px 30px',
+                  borderBottom: '2px solid #2a2420',
+                  background: '#1a1815'
                 }}>
                   <p style={{
                     margin: 0,
-                    fontFamily: "'Cormorant Garamond', Georgia, serif",
-                    fontSize: '14px',
-                    color: '#8b7355',
-                    fontStyle: 'italic',
-                    letterSpacing: '1px'
+                    fontFamily: "'Anton', sans-serif",
+                    fontSize: '16px',
+                    color: '#e8e0d4',
+                    letterSpacing: '3px',
+                    textTransform: 'uppercase'
                   }}>
-                    {result.playlist?.length || 0} brani selezionati
+                    {result.playlist?.length || 0} BRANI SELEZIONATI
                   </p>
                 </div>
                 
@@ -469,42 +474,43 @@ export default function Home() {
                       key={i}
                       style={{
                         display: 'grid',
-                        gridTemplateColumns: '35px 1fr auto',
+                        gridTemplateColumns: '40px 1fr auto',
                         alignItems: 'center',
                         gap: '20px',
-                        padding: '20px 35px',
-                        borderBottom: i < result.playlist.length - 1 ? '1px solid rgba(139, 90, 43, 0.08)' : 'none'
+                        padding: '18px 30px',
+                        borderBottom: i < result.playlist.length - 1 ? '1px solid rgba(42, 36, 32, 0.2)' : 'none'
                       }}
                     >
                       <span style={{
-                        fontFamily: "'Special Elite', monospace",
-                        fontSize: '12px',
-                        color: '#5a4d40'
+                        fontFamily: "'Anton', sans-serif",
+                        fontSize: '18px',
+                        color: '#9a958d'
                       }}>
                         {String(i + 1).padStart(2, '0')}
                       </span>
                       <div>
                         <div style={{
-                          fontFamily: "'Cormorant Garamond', Georgia, serif",
-                          fontSize: '17px',
-                          color: '#e8dcc8',
-                          marginBottom: '4px'
+                          fontFamily: "'Courier Prime', monospace",
+                          fontSize: '15px',
+                          color: '#1a1815',
+                          marginBottom: '3px',
+                          fontWeight: 700
                         }}>
                           {track.title}
                         </div>
                         <div style={{
-                          fontFamily: "'Cormorant Garamond', Georgia, serif",
-                          fontSize: '14px',
-                          color: '#8b7355',
+                          fontFamily: "'Courier Prime', monospace",
+                          fontSize: '13px',
+                          color: '#6a655d',
                           fontStyle: 'italic'
                         }}>
                           {track.artist}
                         </div>
                       </div>
                       <span style={{
-                        fontFamily: "'Special Elite', monospace",
-                        fontSize: '11px',
-                        color: '#5a4d40'
+                        fontFamily: "'Courier Prime', monospace",
+                        fontSize: '12px',
+                        color: '#9a958d'
                       }}>
                         {track.year}
                       </span>
@@ -515,48 +521,43 @@ export default function Home() {
 
               {/* Apple Music Links */}
               <div style={{
-                marginTop: '25px',
-                padding: '35px',
-                background: 'linear-gradient(175deg, rgba(45, 36, 28, 0.9) 0%, rgba(30, 24, 18, 0.95) 100%)',
-                borderRadius: '3px',
-                border: '1px solid rgba(139, 90, 43, 0.15)'
+                marginTop: '20px',
+                padding: '30px',
+                background: 'rgba(255, 252, 245, 0.4)',
+                border: '2px solid #2a2420'
               }}>
                 <p style={{
-                  fontFamily: "'Cormorant Garamond', Georgia, serif",
-                  fontSize: '13px',
-                  color: '#6b5d4d',
+                  fontFamily: "'Courier Prime', monospace",
+                  fontSize: '11px',
+                  color: '#6a655d',
                   marginBottom: '20px',
                   textAlign: 'center',
-                  fontStyle: 'italic',
-                  letterSpacing: '1px'
+                  letterSpacing: '2px',
+                  textTransform: 'uppercase'
                 }}>
                   Ascolta su Apple Music
                 </p>
                 <div style={{
                   display: 'flex',
                   flexWrap: 'wrap',
-                  gap: '10px',
+                  gap: '8px',
                   justifyContent: 'center'
                 }}>
                   {result.playlist?.map((track, i) => (
-                    <a
+                    
                       key={i}
                       href={`https://music.apple.com/search?term=${encodeURIComponent(track.artist + ' ' + track.title)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        background: 'rgba(139, 90, 43, 0.1)',
-                        color: '#a89078',
-                        padding: '10px 16px',
-                        fontSize: '13px',
+                        display: 'inline-block',
+                        background: 'transparent',
+                        color: '#3a3530',
+                        padding: '8px 14px',
+                        fontSize: '12px',
                         textDecoration: 'none',
-                        borderRadius: '2px',
-                        border: '1px solid rgba(139, 90, 43, 0.2)',
-                        fontFamily: "'Cormorant Garamond', Georgia, serif",
-                        fontStyle: 'italic'
+                        border: '1px solid #3a3530',
+                        fontFamily: "'Courier Prime', monospace"
                       }}
                     >
                       {track.title}
@@ -571,19 +572,20 @@ export default function Home() {
           {!result && !isAnalyzing && (
             <div>
               <p style={{
-                fontFamily: "'Cormorant Garamond', Georgia, serif",
-                fontSize: '13px',
-                color: '#5a4d40',
-                marginBottom: '20px',
+                fontFamily: "'Courier Prime', monospace",
+                fontSize: '11px',
+                color: '#6a655d',
+                marginBottom: '18px',
                 textAlign: 'center',
-                fontStyle: 'italic'
+                letterSpacing: '2px',
+                textTransform: 'uppercase'
               }}>
-                oppure prova con...
+                Oppure prova con
               </p>
               <div style={{
                 display: 'flex',
                 flexWrap: 'wrap',
-                gap: '12px',
+                gap: '10px',
                 justifyContent: 'center'
               }}>
                 {examplePrompts.map((prompt, i) => (
@@ -591,15 +593,13 @@ export default function Home() {
                     key={i}
                     onClick={() => setInput(prompt)}
                     style={{
-                      background: 'rgba(45, 36, 28, 0.6)',
-                      border: '1px solid rgba(139, 90, 43, 0.2)',
-                      color: '#9a8978',
-                      padding: '12px 18px',
-                      fontSize: '14px',
+                      background: 'transparent',
+                      border: '1px solid #4a4540',
+                      color: '#4a4540',
+                      padding: '10px 16px',
+                      fontSize: '13px',
                       cursor: 'pointer',
-                      borderRadius: '2px',
-                      fontFamily: "'Cormorant Garamond', Georgia, serif",
-                      fontStyle: 'italic'
+                      fontFamily: "'Courier Prime', monospace"
                     }}
                   >
                     {prompt}
@@ -611,22 +611,23 @@ export default function Home() {
 
           {/* Footer */}
           <footer style={{
-            marginTop: '70px',
+            marginTop: '60px',
             textAlign: 'center',
-            padding: '30px'
+            padding: '25px'
           }}>
             <div style={{
-              width: '40px',
-              height: '1px',
-              background: 'linear-gradient(90deg, transparent, rgba(139, 90, 43, 0.3), transparent)',
+              width: '60px',
+              height: '2px',
+              background: '#2a2420',
               margin: '0 auto 20px'
             }} />
             <p style={{
-              fontFamily: "'Special Elite', monospace",
-              fontSize: '10px',
-              color: '#4a4035',
-              letterSpacing: '2px',
-              margin: 0
+              fontFamily: "'Courier Prime', monospace",
+              fontSize: '11px',
+              color: '#6a655d',
+              letterSpacing: '3px',
+              margin: 0,
+              textTransform: 'uppercase'
             }}>
               Blackstars Studio
             </p>
