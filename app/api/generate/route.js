@@ -79,17 +79,14 @@ async function analyzeTrack(artist, title) {
 
 // Funzione per verificare se il brano corrisponde ai parametri
 function matchesParameters(trackInfo, params) {
-  // Se non ci sono parametri, accetta tutto
   if (!params || Object.keys(params).length === 0) return true;
   
-  // Filtro mode (minor/major)
   if (params.mode && trackInfo.mode) {
     if (trackInfo.mode.toLowerCase() !== params.mode.toLowerCase()) {
       return false;
     }
   }
   
-  // Filtro happiness
   if (params.happinessMax !== null && params.happinessMax !== undefined) {
     if (trackInfo.happiness > params.happinessMax) return false;
   }
@@ -97,7 +94,6 @@ function matchesParameters(trackInfo, params) {
     if (trackInfo.happiness < params.happinessMin) return false;
   }
   
-  // Filtro energy
   if (params.energyMax !== null && params.energyMax !== undefined) {
     if (trackInfo.energy > params.energyMax) return false;
   }
@@ -116,7 +112,15 @@ export async function POST(request) {
       return Response.json({ error: 'Prompt mancante' }, { status: 400 });
     }
 
-    // STEP 1: Identifica luogo, artisti locali e parametri mood
+    // Ottieni l'ora attuale per contesto
+    const currentHour = new Date().getHours();
+    let timeContext = 'daytime';
+    if (currentHour >= 22 || currentHour < 6) timeContext = 'late night';
+    else if (currentHour >= 18) timeContext = 'evening';
+    else if (currentHour >= 12) timeContext = 'afternoon';
+    else timeContext = 'morning';
+
+    // STEP 1: Analisi esperienziale del contesto
     const step1Response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -130,30 +134,49 @@ export async function POST(request) {
         messages: [
           {
             role: 'user',
-            content: `Analyze this request: "${prompt}"
+            content: `You are a music expert who DEEPLY understands the SOUL of places, not just their geography.
 
-TASK: Identify the PLACE mentioned and list LOCAL music artists from that place. Also define the MOOD PARAMETERS.
+Analyze this request: "${prompt}"
+Current time context: ${timeContext}
 
-Examples of local artists:
-- Krakow/Poland/Eastern Europe → Zbigniew Preisner, Chopin, Górecki, Kroke, Kilar, Penderecki, Skalpel, Molchat Doma
-- Naples/Southern Italy → Pino Daniele, James Senese, Nu Genea, Napoli Centrale
-- Berlin/Germany → Tangerine Dream, Kraftwerk, Nils Frahm, Apparat
-- Lisbon/Portugal → Amália Rodrigues, Madredeus, Ana Moura
-- Buenos Aires/Argentina → Astor Piazzolla, Gotan Project
+YOUR TASK: Think like someone who LIVES this experience. Don't just list artists from that country - think about what music you would ACTUALLY HEAR in that place.
 
-MOOD PARAMETERS - choose based on the atmosphere:
-- Night/melancholic/rain/introspective → mode: "minor", happinessMax: 50, energyMax: 70
-- Sunset/nostalgic/calm → mode: "minor", happinessMax: 60, energyMax: 60
-- Morning/peaceful/contemplative → mode: null, happinessMax: 60, energyMax: 50
-- Party/energy/dance → mode: "major", happinessMin: 50, energyMin: 50
-- Happy/sunny/celebration → mode: "major", happinessMin: 40, energyMin: 40
+FOR EACH PLACE, CONSIDER:
+1. VISUAL ATMOSPHERE: Architecture, light, colors, decay or beauty
+2. HISTORY & SOUL: What happened here? What emotions does it carry?
+3. WHAT YOU HEAR: In bars, cafes, streets, car radios
+4. THE FEELING: Not geography, but emotion
+
+EXAMPLES OF EXPERIENTIAL THINKING:
+
+KRAKOW at night is NOT just "Polish classical music". It's:
+- Smoky jazz bars in Kazimierz (Tomasz Stańko, Marcin Wasilewski)
+- Klezmer echoing through Jewish quarter (Kroke, The Klezmatics)
+- Decadent beauty, peeling walls, amber streetlights
+- Post-soviet melancholy (Molchat Doma, Motorama)
+- Dark jazz for cold nights (Bohren & Der Club of Gore)
+- The weight of history (Górecki, Preisner - but also Portishead, Radiohead)
+
+NAPLES is NOT just "Italian pop". It's:
+- Blues and soul (Pino Daniele, James Senese)
+- Street energy, chaos, passion
+- Mediterranean melancholy meets joy
+- Nu Genea, Napoli Centrale, but also Manu Chao, Buena Vista Social Club
+
+LISBON is NOT just "Fado". It's:
+- Saudade - longing for something lost
+- Trams, hills, faded tiles, Atlantic mist
+- Amália Rodrigues, but also Portishead, Chet Baker, Billie Holiday
+
+Think: "What would play in a bar in this place that would feel PERFECT?"
 
 Respond ONLY with JSON:
 {
-  "location": "the identified place",
-  "region": "the cultural region (e.g., Eastern Europe, Southern Italy)",
+  "location": "the place identified (or 'unspecified' if none)",
+  "atmosphere": "describe the visual/emotional atmosphere in 2-3 sentences",
   "mood": "the mood in 2-3 words",
-  "localArtists": ["artist1", "artist2", "artist3", ...],
+  "soundscape": "what music you'd hear in bars/streets in this place",
+  "artists": ["mix of local AND international artists that FIT this atmosphere - 15-20 artists"],
   "parameters": {
     "mode": "minor" or "major" or null,
     "happinessMax": number or null,
@@ -170,15 +193,18 @@ Respond ONLY with JSON:
     const step1Data = await step1Response.json();
     const step1Content = step1Data.content[0].text;
     const step1Clean = step1Content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-    const locationInfo = JSON.parse(step1Clean);
+    const contextInfo = JSON.parse(step1Clean);
 
-    console.log('Step 1 - Location:', locationInfo.location);
-    console.log('Step 1 - Mood:', locationInfo.mood);
-    console.log('Step 1 - Parameters:', locationInfo.parameters);
-    console.log('Step 1 - Local Artists:', locationInfo.localArtists);
+    console.log('=== STEP 1: EXPERIENTIAL ANALYSIS ===');
+    console.log('Location:', contextInfo.location);
+    console.log('Atmosphere:', contextInfo.atmosphere);
+    console.log('Mood:', contextInfo.mood);
+    console.log('Soundscape:', contextInfo.soundscape);
+    console.log('Artists:', contextInfo.artists);
+    console.log('Parameters:', contextInfo.parameters);
 
-    // STEP 2: Chiedi brani specifici di quegli artisti
-    const artistList = locationInfo.localArtists?.join(', ') || '';
+    // STEP 2: Chiedi brani specifici con approccio esperienziale
+    const artistList = contextInfo.artists?.join(', ') || '';
     
     const step2Response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -193,20 +219,22 @@ Respond ONLY with JSON:
         messages: [
           {
             role: 'user',
-            content: `Create a playlist for: "${prompt}"
+            content: `Create a playlist for this experience: "${prompt}"
 
-LOCATION: ${locationInfo.location}
-MOOD: ${locationInfo.mood}
+ATMOSPHERE: ${contextInfo.atmosphere}
+MOOD: ${contextInfo.mood}
+SOUNDSCAPE: ${contextInfo.soundscape}
 
-You MUST use these artists for the first 25 tracks:
+Use these artists (mix of local and international that FIT the vibe):
 ${artistList}
 
-For the last 15 tracks you can use international artists with similar sound.
-
-IMPORTANT: 
-- Use ONLY FAMOUS tracks that DEFINITELY exist on Spotify
-- Write titles and artists EXACTLY as they appear on Spotify
-- NO obscure tracks or invented titles
+RULES:
+1. Choose tracks that SOUND like this atmosphere, not just "from this place"
+2. Mix local artists with international artists that have the SAME FEELING
+3. Think: "Would this track feel perfect playing in a bar in this place?"
+4. Use ONLY FAMOUS tracks that DEFINITELY exist on Spotify
+5. Write titles and artists EXACTLY as they appear on Spotify
+6. Suggest 40 tracks
 
 Respond ONLY with JSON:
 {
@@ -224,18 +252,19 @@ Respond ONLY with JSON:
     const step2Clean = step2Content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     const tracksInfo = JSON.parse(step2Clean);
 
-    console.log('Step 2 - Total suggested:', tracksInfo.suggestedTracks?.length);
+    console.log('=== STEP 2: TRACKS ===');
+    console.log('Total suggested:', tracksInfo.suggestedTracks?.length);
 
     // Ottieni token Spotify
     const spotifyToken = await getSpotifyToken();
     
-    const params = locationInfo.parameters || {};
+    const params = contextInfo.parameters || {};
     const verifiedTracks = [];
     let checkedCount = 0;
     
     for (const track of tracksInfo.suggestedTracks || []) {
       if (verifiedTracks.length >= 17) break;
-      if (checkedCount >= 40) break; // Limite massimo di brani da controllare
+      if (checkedCount >= 40) break;
       
       checkedCount++;
       
@@ -281,17 +310,19 @@ Respond ONLY with JSON:
           happiness: audioParams.happiness,
           energy: audioParams.energy
         });
-        console.log(`Added: ${spotifyTrack.title} (happiness: ${audioParams.happiness}, mode: ${audioParams.mode})`);
+        console.log(`Added: ${spotifyTrack.title} - ${spotifyTrack.artist} (happiness: ${audioParams.happiness}, mode: ${audioParams.mode})`);
       }
     }
 
-    console.log('Final playlist:', verifiedTracks.length, 'tracks');
+    console.log('=== FINAL RESULT ===');
+    console.log('Total tracks:', verifiedTracks.length);
 
     return Response.json({
       interpretation: {
-        location: locationInfo.location,
-        mood: locationInfo.mood,
-        region: locationInfo.region
+        location: contextInfo.location,
+        mood: contextInfo.mood,
+        atmosphere: contextInfo.atmosphere,
+        soundscape: contextInfo.soundscape
       },
       parameters: params,
       playlist: verifiedTracks
