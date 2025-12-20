@@ -371,7 +371,8 @@ export default function Home() {
                   <div style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
-                    gap: '25px'
+                    gap: '25px',
+                    marginBottom: result.interpretation.atmosphere ? '25px' : '0'
                   }}>
                     {result.interpretation.location && (
                       <div>
@@ -412,6 +413,23 @@ export default function Home() {
                       </div>
                     )}
                   </div>
+                  {result.interpretation.atmosphere && (
+                    <div style={{
+                      borderTop: '1px solid rgba(42, 36, 32, 0.2)',
+                      paddingTop: '20px'
+                    }}>
+                      <p style={{
+                        fontFamily: "'Courier Prime', monospace",
+                        fontSize: '14px',
+                        color: '#4a4540',
+                        fontStyle: 'italic',
+                        lineHeight: 1.7,
+                        margin: 0
+                      }}>
+                        "{result.interpretation.atmosphere}"
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 
