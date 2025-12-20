@@ -68,14 +68,6 @@ export default function Home() {
     return `https://www.youtube.com/results?search_query=${encodeURIComponent(artist + ' ' + title)}`;
   };
 
-  const getSpotifyLink = (artist, title) => {
-    return `https://open.spotify.com/search/${encodeURIComponent(artist + ' ' + title)}`;
-  };
-
-  const getAppleMusicLink = (artist, title) => {
-    return `https://music.apple.com/search?term=${encodeURIComponent(artist + ' ' + title)}`;
-  };
-
   return (
     <>
       <style jsx global>{`
@@ -447,16 +439,24 @@ export default function Home() {
                 
                 <div>
                   {result.playlist?.map((track, i) => (
-                    <div
+                    <a
                       key={i}
+                      href={getYouTubeLink(track.artist, track.title)}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       style={{
                         display: 'grid',
                         gridTemplateColumns: '40px 1fr auto',
                         alignItems: 'center',
                         gap: '20px',
                         padding: '18px 30px',
-                        borderBottom: i < result.playlist.length - 1 ? '1px solid rgba(42, 36, 32, 0.2)' : 'none'
+                        borderBottom: i < result.playlist.length - 1 ? '1px solid rgba(42, 36, 32, 0.2)' : 'none',
+                        textDecoration: 'none',
+                        cursor: 'pointer',
+                        transition: 'background 0.2s ease'
                       }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.03)'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                     >
                       <span style={{
                         fontFamily: "'Anton', sans-serif",
@@ -484,100 +484,16 @@ export default function Home() {
                           {track.artist}
                         </div>
                       </div>
-                      <div style={{
-                        display: 'flex',
-                        gap: '8px'
+                      <span style={{
+                        fontFamily: "'Courier Prime', monospace",
+                        fontSize: '11px',
+                        color: '#FF0000',
+                        fontWeight: 700
                       }}>
-                        <a href={getYouTubeLink(track.artist, track.title)} target="_blank" rel="noopener noreferrer" style={{
-                          display: 'inline-block',
-                          background: '#FF0000',
-                          color: '#fff',
-                          padding: '6px 10px',
-                          fontSize: '10px',
-                          fontWeight: 700,
-                          textDecoration: 'none',
-                          borderRadius: '4px',
-                          fontFamily: "'Courier Prime', monospace"
-                        }}>YT</a>
-                        <a href={getSpotifyLink(track.artist, track.title)} target="_blank" rel="noopener noreferrer" style={{
-                          display: 'inline-block',
-                          background: '#1DB954',
-                          color: '#fff',
-                          padding: '6px 10px',
-                          fontSize: '10px',
-                          fontWeight: 700,
-                          textDecoration: 'none',
-                          borderRadius: '4px',
-                          fontFamily: "'Courier Prime', monospace"
-                        }}>SP</a>
-                      </div>
-                    </div>
+                        ▶ PLAY
+                      </span>
+                    </a>
                   ))}
-                </div>
-              </div>
-
-              <div style={{
-                marginTop: '20px',
-                padding: '30px',
-                background: 'rgba(255, 252, 245, 0.4)',
-                border: '2px solid #2a2420',
-                textAlign: 'center'
-              }}>
-                <p style={{
-                  fontFamily: "'Courier Prime', monospace",
-                  fontSize: '11px',
-                  color: '#6a655d',
-                  marginBottom: '15px',
-                  letterSpacing: '2px',
-                  textTransform: 'uppercase'
-                }}>
-                  Open full playlist on
-                </p>
-                <div style={{
-                  display: 'flex',
-                  gap: '15px',
-                  justifyContent: 'center',
-                  flexWrap: 'wrap'
-                }}>
-                  <a href={`https://www.youtube.com/results?search_query=${encodeURIComponent(input + ' playlist')}`} target="_blank" rel="noopener noreferrer" style={{
-                    display: 'inline-block',
-                    background: '#FF0000',
-                    color: '#fff',
-                    padding: '14px 28px',
-                    fontSize: '13px',
-                    fontWeight: 700,
-                    letterSpacing: '2px',
-                    textTransform: 'uppercase',
-                    textDecoration: 'none',
-                    borderRadius: '30px',
-                    fontFamily: "'Courier Prime', monospace"
-                  }}>YouTube</a>
-                  <a href={`https://open.spotify.com/search/${encodeURIComponent(input)}`} target="_blank" rel="noopener noreferrer" style={{
-                    display: 'inline-block',
-                    background: '#1DB954',
-                    color: '#fff',
-                    padding: '14px 28px',
-                    fontSize: '13px',
-                    fontWeight: 700,
-                    letterSpacing: '2px',
-                    textTransform: 'uppercase',
-                    textDecoration: 'none',
-                    borderRadius: '30px',
-                    fontFamily: "'Courier Prime', monospace"
-                  }}>Spotify</a>
-                  <a href={`https://music.apple.com/search?term=${encodeURIComponent(input)}`} target="_blank" rel="noopener noreferrer" style={{
-                    display: 'inline-block',
-                    background: '#FC3C44',
-                    color: '#fff',
-                    padding: '14px 28px',
-                    fontSize: '13px',
-                    fontWeight: 700,
-                    letterSpacing: '2px',
-                    textTransform: 'uppercase',
-                    textDecoration: 'none',
-                    borderRadius: '30px',
-                    fontFamily: "'Courier Prime', monospace"
-                  }}>Apple</a>
                 </div>
               </div>
             </div>
