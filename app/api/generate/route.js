@@ -340,14 +340,4 @@ Respond ONLY with JSON:
   } catch (error) {
     console.error('Error:', error);
     return Response.json({ error: 'Internal server error' }, { status: 500 });
-  }
-}
-```
-
-Vai su GitHub, cancella tutto in **route.js**, incolla questo, **Commit changes**.
-
-Ho aggiunto nel prompt:
-```
-IMPORTANT - PARAMETERS USE VALUES FROM 0 TO 100 (not 0 to 1):
-- happiness: 0 = very sad, 50 = neutral, 100 = very happy
-- energy: 0 = very calm, 50 = moderate, 100 = very energetic
+  
