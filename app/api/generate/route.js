@@ -180,6 +180,7 @@ PARAMETER RULES:
 - For CALM moods: energyMax (e.g. 50)
 - For ENERGETIC moods: energyMin (e.g. 50)
 - Traditional/folk music from Eastern Europe is usually MINOR even when warm/nostalgic
+- For FAMILY/NOSTALGIC gatherings: be flexible, don't set happinessMin (some nostalgic songs are sad)
 
 Respond ONLY with JSON:
 {
@@ -239,12 +240,13 @@ Use these artists and similar ones that fit the vibe:
 ${artistList}
 
 RULES:
-1. Suggest 100 tracks total
+1. Suggest 80 tracks total
 2. At least 60% should be from LOCAL artists of the identified location/culture
 3. Use FAMOUS, WELL-KNOWN tracks that definitely exist on Spotify
 4. Write artist names and song titles as accurately as possible
 5. Mix different eras and styles that fit the mood
 6. Think about what would ACTUALLY play in this situation
+7. Prioritize songs that are POPULAR and RECOGNIZABLE
 
 Respond ONLY with JSON:
 {
@@ -274,9 +276,22 @@ Respond ONLY with JSON:
     let notOnSpotify = 0;
     let soundNetFailed = 0;
     
+    // Target: get 25 analyzed tracks, then stop
+    const TARGET_ANALYZED = 25;
+    const MAX_CHECKS = 60;
+    
     for (const track of tracksInfo.suggestedTracks || []) {
-      if (allAnalyzedTracks.length >= 50) break;
-      if (checkedCount >= 100) break;
+      // Stop if we have enough analyzed tracks
+      if (allAnalyzedTracks.length >= TARGET_ANALYZED) {
+        console.log(`Reached target of ${TARGET_ANALYZED} analyzed tracks, stopping early`);
+        break;
+      }
+      
+      // Safety limit
+      if (checkedCount >= MAX_CHECKS) {
+        console.log(`Reached max checks limit of ${MAX_CHECKS}`);
+        break;
+      }
       
       checkedCount++;
       
@@ -288,7 +303,8 @@ Respond ONLY with JSON:
         continue;
       }
       
-      await delay(1100);
+      // Reduced delay for faster processing
+      await delay(900);
       
       const audioParams = await analyzeTrack(track.artist, track.title);
       
@@ -314,7 +330,7 @@ Respond ONLY with JSON:
           happiness: audioParams.happiness,
           energy: audioParams.energy
         });
-        console.log(`Analyzed: ${spotifyTrack.title} - ${spotifyTrack.artist} (happiness: ${audioParams.happiness}, mode: ${audioParams.mode})`);
+        console.log(`Analyzed [${allAnalyzedTracks.length}/${TARGET_ANALYZED}]: ${spotifyTrack.title} - ${spotifyTrack.artist} (happiness: ${audioParams.happiness}, mode: ${audioParams.mode})`);
       }
     }
 
@@ -322,6 +338,7 @@ Respond ONLY with JSON:
     console.log('Total analyzed tracks:', allAnalyzedTracks.length);
     console.log('Not on Spotify:', notOnSpotify);
     console.log('SoundNet failed:', soundNetFailed);
+    console.log('Tracks checked:', checkedCount);
 
     let verifiedTracks = [];
     let strictLevel = 3;
