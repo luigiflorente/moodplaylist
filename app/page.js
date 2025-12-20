@@ -218,7 +218,6 @@ export default function Home() {
             marginBottom: '50px', 
             textAlign: 'center',
             padding: '45px 35px',
-            background: 'rgba(232, 224, 212, 0.5)',
             position: 'relative'
           }}>
             <div style={{
