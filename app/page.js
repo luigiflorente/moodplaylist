@@ -314,7 +314,7 @@ export default function Home() {
                 textTransform: 'uppercase'
               }}>
                 {phase === 'analyzing' && 'Reading between the lines...'}
-                {phase === 'translating' && 'Finding the right melodies...'}
+                {phase === 'translating' && 'Tuning into the mood...'}
                 {phase === 'generating' && 'Composing your playlist...'}
               </p>
             </div>
