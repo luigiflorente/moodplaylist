@@ -320,18 +320,10 @@ export default function Home() {
               
               <div style={{
                 display: 'flex',
-                justifyContent: 'space-between',
+                justifyContent: 'flex-end',
                 alignItems: 'center',
                 marginTop: '20px'
               }}>
-                <span style={{
-                  fontFamily: "'Courier Prime', monospace",
-                  fontSize: '12px',
-                  color: '#6a655d',
-                  letterSpacing: '1px'
-                }}>
-                  {input.length > 0 ? `${input.length} ${t.characters}` : '...'}
-                </span>
                 
                 <button
                   onClick={handleAnalyze}
