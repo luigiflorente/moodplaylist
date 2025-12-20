@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export default function Home() {
   const [input, setInput] = useState('');
@@ -8,9 +8,6 @@ export default function Home() {
   const [result, setResult] = useState(null);
   const [phase, setPhase] = useState('idle');
   const [error, setError] = useState(null);
-  const [spotifyToken, setSpotifyToken] = useState(null);
-  const [isCreatingPlaylist, setIsCreatingPlaylist] = useState(false);
-  const [playlistCreated, setPlaylistCreated] = useState(null);
 
   const examplePrompts = [
     "Driving at night in Krakow",
@@ -20,38 +17,12 @@ export default function Home() {
     "Lazy Sunday in Buenos Aires"
   ];
 
-  useEffect(() => {
-    // Check for Spotify token in URL
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('spotify_token');
-    
-    if (token) {
-      setSpotifyToken(token);
-      window.history.replaceState({}, '', '/');
-      
-      // Restore saved playlist from localStorage
-      const savedResult = localStorage.getItem('moodplaylist_result');
-      const savedInput = localStorage.getItem('moodplaylist_input');
-      
-      if (savedResult) {
-        setResult(JSON.parse(savedResult));
-        setInput(savedInput || '');
-        setPhase('complete');
-        
-        // Clean up localStorage
-        localStorage.removeItem('moodplaylist_result');
-        localStorage.removeItem('moodplaylist_input');
-      }
-    }
-  }, []);
-
   const handleAnalyze = async () => {
     if (!input.trim()) return;
     
     setIsAnalyzing(true);
     setError(null);
     setPhase('analyzing');
-    setPlaylistCreated(null);
 
     try {
       setPhase('translating');
@@ -91,55 +62,18 @@ export default function Home() {
     setResult(null);
     setPhase('idle');
     setError(null);
-    setPlaylistCreated(null);
   };
 
-  const connectSpotify = () => {
-    // Save current playlist to localStorage before redirecting
-    if (result) {
-      localStorage.setItem('moodplaylist_result', JSON.stringify(result));
-      localStorage.setItem('moodplaylist_input', input);
-    }
-    
-    const clientId = 'de6869f55ac7428eb12efe30cdb8a387';
-    const redirectUri = encodeURIComponent('https://moodplaylist-ten.vercel.app/api/spotify-callback');
-    const scopes = encodeURIComponent('playlist-modify-public playlist-modify-private');
-    const authUrl = `https://accounts.spotify.com/authorize?response_type=code&client_id=${clientId}&scope=${scopes}&redirect_uri=${redirectUri}`;
-    window.location.href = authUrl;
+  const getYouTubeLink = (artist, title) => {
+    return `https://www.youtube.com/results?search_query=${encodeURIComponent(artist + ' ' + title)}`;
   };
 
-  const createSpotifyPlaylist = async () => {
-    if (!spotifyToken || !result?.playlist) return;
-    
-    setIsCreatingPlaylist(true);
-    
-    try {
-      const response = await fetch('/api/spotify-playlist', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          token: spotifyToken,
-          tracks: result.playlist,
-          playlistName: `Mood: ${input.substring(0, 50)}`
-        }),
-      });
+  const getSpotifyLink = (artist, title) => {
+    return `https://open.spotify.com/search/${encodeURIComponent(artist + ' ' + title)}`;
+  };
 
-      const data = await response.json();
-      
-      if (data.success) {
-        setPlaylistCreated(data);
-      } else {
-        throw new Error(data.error || 'Failed to create playlist');
-      }
-    } catch (err) {
-      console.error('Error creating playlist:', err);
-      setError('Failed to create Spotify playlist. Please try connecting again.');
-      setSpotifyToken(null);
-    } finally {
-      setIsCreatingPlaylist(false);
-    }
+  const getAppleMusicLink = (artist, title) => {
+    return `https://music.apple.com/search?term=${encodeURIComponent(artist + ' ' + title)}`;
   };
 
   return (
@@ -550,13 +484,33 @@ export default function Home() {
                           {track.artist}
                         </div>
                       </div>
-                      <span style={{
-                        fontFamily: "'Courier Prime', monospace",
-                        fontSize: '12px',
-                        color: '#9a958d'
+                      <div style={{
+                        display: 'flex',
+                        gap: '8px'
                       }}>
-                        {track.year}
-                      </span>
+                        <a href={getYouTubeLink(track.artist, track.title)} target="_blank" rel="noopener noreferrer" style={{
+                          display: 'inline-block',
+                          background: '#FF0000',
+                          color: '#fff',
+                          padding: '6px 10px',
+                          fontSize: '10px',
+                          fontWeight: 700,
+                          textDecoration: 'none',
+                          borderRadius: '4px',
+                          fontFamily: "'Courier Prime', monospace"
+                        }}>YT</a>
+                        <a href={getSpotifyLink(track.artist, track.title)} target="_blank" rel="noopener noreferrer" style={{
+                          display: 'inline-block',
+                          background: '#1DB954',
+                          color: '#fff',
+                          padding: '6px 10px',
+                          fontSize: '10px',
+                          fontWeight: 700,
+                          textDecoration: 'none',
+                          borderRadius: '4px',
+                          fontFamily: "'Courier Prime', monospace"
+                        }}>SP</a>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -569,121 +523,61 @@ export default function Home() {
                 border: '2px solid #2a2420',
                 textAlign: 'center'
               }}>
-                {playlistCreated ? (
-                  <div>
-                    <p style={{
-                      fontFamily: "'Courier Prime', monospace",
-                      fontSize: '14px',
-                      color: '#1a1815',
-                      marginBottom: '15px'
-                    }}>
-                      ✓ Playlist created with {playlistCreated.tracksAdded} tracks!
-                    </p>
-                    <a href={playlistCreated.playlistUrl} target="_blank" rel="noopener noreferrer" style={{
-                      display: 'inline-block',
-                      background: '#1DB954',
-                      color: '#fff',
-                      padding: '14px 28px',
-                      fontSize: '13px',
-                      fontWeight: 700,
-                      letterSpacing: '2px',
-                      textTransform: 'uppercase',
-                      textDecoration: 'none',
-                      borderRadius: '30px',
-                      fontFamily: "'Courier Prime', monospace"
-                    }}>OPEN IN SPOTIFY</a>
-                  </div>
-                ) : (
-                  <div>
-                    <p style={{
-                      fontFamily: "'Courier Prime', monospace",
-                      fontSize: '11px',
-                      color: '#6a655d',
-                      marginBottom: '15px',
-                      letterSpacing: '2px',
-                      textTransform: 'uppercase'
-                    }}>
-                      Save to your Spotify account
-                    </p>
-                    {spotifyToken ? (
-                      <button
-                        onClick={createSpotifyPlaylist}
-                        disabled={isCreatingPlaylist}
-                        style={{
-                          background: isCreatingPlaylist ? '#6a655d' : '#1DB954',
-                          border: 'none',
-                          color: '#fff',
-                          padding: '14px 28px',
-                          fontSize: '13px',
-                          fontWeight: 700,
-                          letterSpacing: '2px',
-                          textTransform: 'uppercase',
-                          cursor: isCreatingPlaylist ? 'not-allowed' : 'pointer',
-                          borderRadius: '30px',
-                          fontFamily: "'Courier Prime', monospace"
-                        }}
-                      >
-                        {isCreatingPlaylist ? 'CREATING...' : 'CREATE SPOTIFY PLAYLIST'}
-                      </button>
-                    ) : (
-                      <button
-                        onClick={connectSpotify}
-                        style={{
-                          background: '#1DB954',
-                          border: 'none',
-                          color: '#fff',
-                          padding: '14px 28px',
-                          fontSize: '13px',
-                          fontWeight: 700,
-                          letterSpacing: '2px',
-                          textTransform: 'uppercase',
-                          cursor: 'pointer',
-                          borderRadius: '30px',
-                          fontFamily: "'Courier Prime', monospace"
-                        }}
-                      >
-                        CONNECT SPOTIFY
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <div style={{
-                marginTop: '20px',
-                padding: '30px',
-                background: 'rgba(255, 252, 245, 0.4)',
-                border: '2px solid #2a2420'
-              }}>
                 <p style={{
                   fontFamily: "'Courier Prime', monospace",
                   fontSize: '11px',
                   color: '#6a655d',
-                  marginBottom: '20px',
-                  textAlign: 'center',
+                  marginBottom: '15px',
                   letterSpacing: '2px',
                   textTransform: 'uppercase'
                 }}>
-                  Listen on Apple Music
+                  Open full playlist on
                 </p>
                 <div style={{
                   display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: '8px',
-                  justifyContent: 'center'
+                  gap: '15px',
+                  justifyContent: 'center',
+                  flexWrap: 'wrap'
                 }}>
-                  {result.playlist?.map((track, i) => (
-                    <a key={i} href={`https://music.apple.com/search?term=${encodeURIComponent(track.artist + ' ' + track.title)}`} target="_blank" rel="noopener noreferrer" style={{
-                      display: 'inline-block',
-                      background: 'transparent',
-                      color: '#3a3530',
-                      padding: '8px 14px',
-                      fontSize: '12px',
-                      textDecoration: 'none',
-                      border: '1px solid #3a3530',
-                      fontFamily: "'Courier Prime', monospace"
-                    }}>{track.title}</a>
-                  ))}
+                  <a href={`https://www.youtube.com/results?search_query=${encodeURIComponent(input + ' playlist')}`} target="_blank" rel="noopener noreferrer" style={{
+                    display: 'inline-block',
+                    background: '#FF0000',
+                    color: '#fff',
+                    padding: '14px 28px',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    letterSpacing: '2px',
+                    textTransform: 'uppercase',
+                    textDecoration: 'none',
+                    borderRadius: '30px',
+                    fontFamily: "'Courier Prime', monospace"
+                  }}>YouTube</a>
+                  <a href={`https://open.spotify.com/search/${encodeURIComponent(input)}`} target="_blank" rel="noopener noreferrer" style={{
+                    display: 'inline-block',
+                    background: '#1DB954',
+                    color: '#fff',
+                    padding: '14px 28px',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    letterSpacing: '2px',
+                    textTransform: 'uppercase',
+                    textDecoration: 'none',
+                    borderRadius: '30px',
+                    fontFamily: "'Courier Prime', monospace"
+                  }}>Spotify</a>
+                  <a href={`https://music.apple.com/search?term=${encodeURIComponent(input)}`} target="_blank" rel="noopener noreferrer" style={{
+                    display: 'inline-block',
+                    background: '#FC3C44',
+                    color: '#fff',
+                    padding: '14px 28px',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    letterSpacing: '2px',
+                    textTransform: 'uppercase',
+                    textDecoration: 'none',
+                    borderRadius: '30px',
+                    fontFamily: "'Courier Prime', monospace"
+                  }}>Apple</a>
                 </div>
               </div>
             </div>
