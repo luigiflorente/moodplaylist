@@ -21,11 +21,27 @@ export default function Home() {
   ];
 
   useEffect(() => {
+    // Check for Spotify token in URL
     const params = new URLSearchParams(window.location.search);
     const token = params.get('spotify_token');
+    
     if (token) {
       setSpotifyToken(token);
       window.history.replaceState({}, '', '/');
+      
+      // Restore saved playlist from localStorage
+      const savedResult = localStorage.getItem('moodplaylist_result');
+      const savedInput = localStorage.getItem('moodplaylist_input');
+      
+      if (savedResult) {
+        setResult(JSON.parse(savedResult));
+        setInput(savedInput || '');
+        setPhase('complete');
+        
+        // Clean up localStorage
+        localStorage.removeItem('moodplaylist_result');
+        localStorage.removeItem('moodplaylist_input');
+      }
     }
   }, []);
 
@@ -79,6 +95,12 @@ export default function Home() {
   };
 
   const connectSpotify = () => {
+    // Save current playlist to localStorage before redirecting
+    if (result) {
+      localStorage.setItem('moodplaylist_result', JSON.stringify(result));
+      localStorage.setItem('moodplaylist_input', input);
+    }
+    
     const clientId = 'de6869f55ac7428eb12efe30cdb8a387';
     const redirectUri = encodeURIComponent('https://moodplaylist-ten.vercel.app/api/spotify-callback');
     const scopes = encodeURIComponent('playlist-modify-public playlist-modify-private');
