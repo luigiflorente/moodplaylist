@@ -64,7 +64,7 @@ LISBON RAIN:
 - Melancholic international: Portishead, Chet Baker
 
 RULES:
-1. Create EXACTLY 17 tracks
+1. Create EXACTLY 15 tracks
 2. At least 60% should be LOCAL artists from the identified place/culture
 3. Choose REAL, FAMOUS songs that definitely exist
 4. Match the MOOD perfectly - every song should feel right
