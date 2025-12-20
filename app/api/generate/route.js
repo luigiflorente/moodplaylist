@@ -67,11 +67,45 @@ async function analyzeTrack(artist, title) {
       mode: data.mode,
       tempo: data.tempo,
       happiness: data.happiness,
-      energy: data.energy
+      energy: data.energy,
+      danceability: data.danceability,
+      acousticness: data.acousticness,
+      popularity: data.popularity
     };
   } catch (error) {
     return null;
   }
+}
+
+// Funzione per verificare se il brano corrisponde ai parametri
+function matchesParameters(trackInfo, params) {
+  // Se non ci sono parametri, accetta tutto
+  if (!params || Object.keys(params).length === 0) return true;
+  
+  // Filtro mode (minor/major)
+  if (params.mode && trackInfo.mode) {
+    if (trackInfo.mode.toLowerCase() !== params.mode.toLowerCase()) {
+      return false;
+    }
+  }
+  
+  // Filtro happiness
+  if (params.happinessMax !== null && params.happinessMax !== undefined) {
+    if (trackInfo.happiness > params.happinessMax) return false;
+  }
+  if (params.happinessMin !== null && params.happinessMin !== undefined) {
+    if (trackInfo.happiness < params.happinessMin) return false;
+  }
+  
+  // Filtro energy
+  if (params.energyMax !== null && params.energyMax !== undefined) {
+    if (trackInfo.energy > params.energyMax) return false;
+  }
+  if (params.energyMin !== null && params.energyMin !== undefined) {
+    if (trackInfo.energy < params.energyMin) return false;
+  }
+  
+  return true;
 }
 
 export async function POST(request) {
@@ -82,7 +116,7 @@ export async function POST(request) {
       return Response.json({ error: 'Prompt mancante' }, { status: 400 });
     }
 
-    // STEP 1: Identifica luogo e artisti locali
+    // STEP 1: Identifica luogo, artisti locali e parametri mood
     const step1Response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -96,22 +130,37 @@ export async function POST(request) {
         messages: [
           {
             role: 'user',
-            content: `Analizza questa richiesta: "${prompt}"
+            content: `Analyze this request: "${prompt}"
 
-COMPITO: Identifica il LUOGO menzionato e elenca gli artisti musicali LOCALI di quel luogo.
+TASK: Identify the PLACE mentioned and list LOCAL music artists from that place. Also define the MOOD PARAMETERS.
 
-Esempi:
-- Cracovia/Polonia → Zbigniew Preisner, Chopin, Górecki, Kroke, Kilar, Penderecki, Skalpel, Molchat Doma
-- Napoli → Pino Daniele, James Senese, Nu Genea, Napoli Centrale
-- Berlino → Tangerine Dream, Kraftwerk, Nils Frahm
-- Lisbona → Amália Rodrigues, Madredeus, fado
+Examples of local artists:
+- Krakow/Poland/Eastern Europe → Zbigniew Preisner, Chopin, Górecki, Kroke, Kilar, Penderecki, Skalpel, Molchat Doma
+- Naples/Southern Italy → Pino Daniele, James Senese, Nu Genea, Napoli Centrale
+- Berlin/Germany → Tangerine Dream, Kraftwerk, Nils Frahm, Apparat
+- Lisbon/Portugal → Amália Rodrigues, Madredeus, Ana Moura
+- Buenos Aires/Argentina → Astor Piazzolla, Gotan Project
 
-Rispondi SOLO con JSON:
+MOOD PARAMETERS - choose based on the atmosphere:
+- Night/melancholic/rain/introspective → mode: "minor", happinessMax: 50, energyMax: 70
+- Sunset/nostalgic/calm → mode: "minor", happinessMax: 60, energyMax: 60
+- Morning/peaceful/contemplative → mode: null, happinessMax: 60, energyMax: 50
+- Party/energy/dance → mode: "major", happinessMin: 50, energyMin: 50
+- Happy/sunny/celebration → mode: "major", happinessMin: 40, energyMin: 40
+
+Respond ONLY with JSON:
 {
-  "location": "il luogo identificato",
-  "region": "la regione culturale (es: Est Europa, Sud Italia)",
-  "mood": "il mood della richiesta (es: malinconico, energico)",
-  "localArtists": ["artista1", "artista2", "artista3", ...]
+  "location": "the identified place",
+  "region": "the cultural region (e.g., Eastern Europe, Southern Italy)",
+  "mood": "the mood in 2-3 words",
+  "localArtists": ["artist1", "artist2", "artist3", ...],
+  "parameters": {
+    "mode": "minor" or "major" or null,
+    "happinessMax": number or null,
+    "happinessMin": number or null,
+    "energyMax": number or null,
+    "energyMin": number or null
+  }
 }`
           }
         ]
@@ -124,6 +173,8 @@ Rispondi SOLO con JSON:
     const locationInfo = JSON.parse(step1Clean);
 
     console.log('Step 1 - Location:', locationInfo.location);
+    console.log('Step 1 - Mood:', locationInfo.mood);
+    console.log('Step 1 - Parameters:', locationInfo.parameters);
     console.log('Step 1 - Local Artists:', locationInfo.localArtists);
 
     // STEP 2: Chiedi brani specifici di quegli artisti
@@ -142,23 +193,25 @@ Rispondi SOLO con JSON:
         messages: [
           {
             role: 'user',
-            content: `Crea una playlist per: "${prompt}"
+            content: `Create a playlist for: "${prompt}"
 
-LUOGO: ${locationInfo.location}
+LOCATION: ${locationInfo.location}
 MOOD: ${locationInfo.mood}
 
-DEVI usare questi artisti per i primi 25 brani:
+You MUST use these artists for the first 25 tracks:
 ${artistList}
 
-Per gli ultimi 15 brani puoi usare artisti internazionali con sound simile.
+For the last 15 tracks you can use international artists with similar sound.
 
-IMPORTANTE: Usa SOLO brani FAMOSI che SICURAMENTE esistono su Spotify. 
-NO brani oscuri o titoli inventati.
+IMPORTANT: 
+- Use ONLY FAMOUS tracks that DEFINITELY exist on Spotify
+- Write titles and artists EXACTLY as they appear on Spotify
+- NO obscure tracks or invented titles
 
-Rispondi SOLO con JSON:
+Respond ONLY with JSON:
 {
   "suggestedTracks": [
-    {"title": "titolo ESATTO Spotify", "artist": "artista ESATTO Spotify"}
+    {"title": "EXACT Spotify title", "artist": "EXACT Spotify artist"}
   ]
 }`
           }
@@ -171,15 +224,20 @@ Rispondi SOLO con JSON:
     const step2Clean = step2Content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     const tracksInfo = JSON.parse(step2Clean);
 
-    console.log('Step 2 - First 5 tracks:', tracksInfo.suggestedTracks?.slice(0, 5));
+    console.log('Step 2 - Total suggested:', tracksInfo.suggestedTracks?.length);
 
     // Ottieni token Spotify
     const spotifyToken = await getSpotifyToken();
     
+    const params = locationInfo.parameters || {};
     const verifiedTracks = [];
+    let checkedCount = 0;
     
     for (const track of tracksInfo.suggestedTracks || []) {
       if (verifiedTracks.length >= 17) break;
+      if (checkedCount >= 40) break; // Limite massimo di brani da controllare
+      
+      checkedCount++;
       
       // Verifica su Spotify
       const spotifyTrack = await searchSpotify(spotifyToken, track.artist, track.title);
@@ -195,6 +253,18 @@ Rispondi SOLO con JSON:
       // Ottieni parametri da SoundNet
       const audioParams = await analyzeTrack(track.artist, track.title);
       
+      if (!audioParams) {
+        console.log(`SoundNet failed: ${track.title}`);
+        continue;
+      }
+      
+      // Verifica se corrisponde ai parametri mood
+      if (!matchesParameters(audioParams, params)) {
+        console.log(`Filtered out: ${track.title} (happiness: ${audioParams.happiness}, mode: ${audioParams.mode})`);
+        continue;
+      }
+      
+      // Controlla duplicati
       const isDuplicate = verifiedTracks.some(
         t => t.spotifyId === spotifyTrack.spotifyId
       );
@@ -205,14 +275,17 @@ Rispondi SOLO con JSON:
           artist: spotifyTrack.artist,
           spotifyId: spotifyTrack.spotifyId,
           year: spotifyTrack.year,
-          key: audioParams?.key || null,
-          mode: audioParams?.mode || null,
-          tempo: audioParams?.tempo || null,
-          happiness: audioParams?.happiness || null,
-          energy: audioParams?.energy || null
+          key: audioParams.key,
+          mode: audioParams.mode,
+          tempo: audioParams.tempo,
+          happiness: audioParams.happiness,
+          energy: audioParams.energy
         });
+        console.log(`Added: ${spotifyTrack.title} (happiness: ${audioParams.happiness}, mode: ${audioParams.mode})`);
       }
     }
+
+    console.log('Final playlist:', verifiedTracks.length, 'tracks');
 
     return Response.json({
       interpretation: {
@@ -220,11 +293,12 @@ Rispondi SOLO con JSON:
         mood: locationInfo.mood,
         region: locationInfo.region
       },
+      parameters: params,
       playlist: verifiedTracks
     });
 
   } catch (error) {
     console.error('Error:', error);
-    return Response.json({ error: 'Errore interno del server' }, { status: 500 });
+    return Response.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
