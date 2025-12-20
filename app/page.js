@@ -1,6 +1,73 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+const translations = {
+  en: {
+    tagline: 'Music for every moment',
+    placeholder: 'Describe where you are, what you feel, what you see...',
+    generate: 'GENERATE',
+    wait: 'WAIT...',
+    tuning: 'Tuning into the mood...',
+    analyzing: 'Reading between the lines...',
+    composing: 'Composing your playlist...',
+    new: 'NEW',
+    location: 'LOCATION',
+    mood: 'MOOD',
+    tracksSelected: 'TRACKS SELECTED',
+    play: '▶ PLAY',
+    orTryWith: 'Or try with',
+    characters: 'characters'
+  },
+  it: {
+    tagline: 'Musica per ogni momento',
+    placeholder: 'Descrivi dove sei, cosa senti, cosa vedi...',
+    generate: 'GENERA',
+    wait: 'ATTENDI...',
+    tuning: 'Sintonizzandosi sul mood...',
+    analyzing: 'Leggendo tra le righe...',
+    composing: 'Componendo la tua playlist...',
+    new: 'NUOVA',
+    location: 'LUOGO',
+    mood: 'MOOD',
+    tracksSelected: 'BRANI SELEZIONATI',
+    play: '▶ ASCOLTA',
+    orTryWith: 'Oppure prova con',
+    characters: 'caratteri'
+  },
+  pl: {
+    tagline: 'Muzyka na każdy moment',
+    placeholder: 'Opisz gdzie jesteś, co czujesz, co widzisz...',
+    generate: 'GENERUJ',
+    wait: 'CZEKAJ...',
+    tuning: 'Dostrajanie się do nastroju...',
+    analyzing: 'Czytanie między wierszami...',
+    composing: 'Komponowanie playlisty...',
+    new: 'NOWA',
+    location: 'MIEJSCE',
+    mood: 'NASTRÓJ',
+    tracksSelected: 'WYBRANYCH UTWORÓW',
+    play: '▶ ODTWÓRZ',
+    orTryWith: 'Lub spróbuj z',
+    characters: 'znaków'
+  },
+  es: {
+    tagline: 'Música para cada momento',
+    placeholder: 'Describe dónde estás, qué sientes, qué ves...',
+    generate: 'GENERAR',
+    wait: 'ESPERA...',
+    tuning: 'Sintonizando el mood...',
+    analyzing: 'Leyendo entre líneas...',
+    composing: 'Componiendo tu playlist...',
+    new: 'NUEVA',
+    location: 'LUGAR',
+    mood: 'MOOD',
+    tracksSelected: 'CANCIONES SELECCIONADAS',
+    play: '▶ ESCUCHAR',
+    orTryWith: 'O prueba con',
+    characters: 'caracteres'
+  }
+};
 
 export default function Home() {
   const [input, setInput] = useState('');
@@ -8,6 +75,16 @@ export default function Home() {
   const [result, setResult] = useState(null);
   const [phase, setPhase] = useState('idle');
   const [error, setError] = useState(null);
+  const [lang, setLang] = useState('en');
+
+  useEffect(() => {
+    const browserLang = navigator.language?.slice(0, 2) || 'en';
+    if (translations[browserLang]) {
+      setLang(browserLang);
+    }
+  }, []);
+
+  const t = translations[lang];
 
   const examplePrompts = [
     "Driving at night in Krakow",
@@ -186,7 +263,7 @@ export default function Home() {
               letterSpacing: '3px',
               textTransform: 'uppercase'
             }}>
-              Music for every moment
+              {t.tagline}
             </p>
 
             <div style={{
@@ -223,7 +300,7 @@ export default function Home() {
               <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Describe where you are, what you feel, what you see..."
+                placeholder={t.placeholder}
                 disabled={isAnalyzing}
                 style={{
                   width: '100%',
@@ -254,7 +331,7 @@ export default function Home() {
                   color: '#6a655d',
                   letterSpacing: '1px'
                 }}>
-                  {input.length > 0 ? `${input.length} characters` : '...'}
+                  {input.length > 0 ? `${input.length} ${t.characters}` : '...'}
                 </span>
                 
                 <button
@@ -274,7 +351,7 @@ export default function Home() {
                     transition: 'all 0.2s ease'
                   }}
                 >
-                  {isAnalyzing ? 'WAIT...' : 'GENERATE'}
+                  {isAnalyzing ? t.wait : t.generate}
                 </button>
               </div>
             </div>
@@ -304,9 +381,9 @@ export default function Home() {
                 letterSpacing: '2px',
                 textTransform: 'uppercase'
               }}>
-                {phase === 'analyzing' && 'Reading between the lines...'}
-                {phase === 'translating' && 'Tuning into the mood...'}
-                {phase === 'generating' && 'Composing your playlist...'}
+                {phase === 'analyzing' && t.analyzing}
+                {phase === 'translating' && t.tuning}
+                {phase === 'generating' && t.composing}
               </p>
             </div>
           )}
@@ -348,7 +425,7 @@ export default function Home() {
                     fontFamily: "'Courier Prime', monospace"
                   }}
                 >
-                  NEW
+                  {t.new}
                 </button>
               </div>
 
@@ -374,7 +451,7 @@ export default function Home() {
                           marginBottom: '8px', 
                           letterSpacing: '2px', 
                           textTransform: 'uppercase' 
-                        }}>LOCATION</div>
+                        }}>{t.location}</div>
                         <div style={{ 
                           fontFamily: "'Anton', sans-serif",
                           fontSize: '22px', 
@@ -393,7 +470,7 @@ export default function Home() {
                           marginBottom: '8px', 
                           letterSpacing: '2px', 
                           textTransform: 'uppercase' 
-                        }}>MOOD</div>
+                        }}>{t.mood}</div>
                         <div style={{ 
                           fontFamily: "'Anton', sans-serif",
                           fontSize: '22px', 
@@ -442,7 +519,7 @@ export default function Home() {
                     letterSpacing: '3px',
                     textTransform: 'uppercase'
                   }}>
-                    {result.playlist?.length || 0} TRACKS SELECTED
+                    {result.playlist?.length || 0} {t.tracksSelected}
                   </p>
                 </div>
                 
@@ -499,7 +576,7 @@ export default function Home() {
                         color: '#FF0000',
                         fontWeight: 700
                       }}>
-                        ▶ PLAY
+                        {t.play}
                       </span>
                     </a>
                   ))}
@@ -519,7 +596,7 @@ export default function Home() {
                 letterSpacing: '2px',
                 textTransform: 'uppercase'
               }}>
-                Or try with
+                {t.orTryWith}
               </p>
               <div style={{
                 display: 'flex',
