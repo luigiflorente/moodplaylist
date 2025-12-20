@@ -13,7 +13,20 @@ export async function POST(request) {
     else if (currentHour >= 12) timeContext = 'afternoon';
     else timeContext = 'morning';
 
-    const geminiPrompt = `You are a music expert who DEEPLY understands the SOUL of places and moments.
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-5-20251101',
+        max_tokens: 4000,
+        messages: [
+          {
+            role: 'user',
+            content: `You are a music expert who DEEPLY understands the SOUL of places and moments.
 
 User request: "${prompt}"
 Current time: ${timeContext}
@@ -58,7 +71,7 @@ RULES:
 5. Mix eras: classics and contemporary
 6. Think about the FLOW - how songs connect to each other
 
-Respond ONLY with this JSON structure (no markdown, no backticks, just pure JSON):
+Respond ONLY with this JSON structure:
 {
   "location": "the place/situation identified",
   "atmosphere": "2-3 sentences describing the visual and emotional atmosphere",
@@ -71,39 +84,18 @@ Respond ONLY with this JSON structure (no markdown, no backticks, just pure JSON
       "why": "one short sentence why this fits"
     }
   ]
-}`;
-
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent?key=${process.env.GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{ text: geminiPrompt }]
-          }],
-          generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 4000,
+}`
           }
-        })
-      }
-    );
+        ]
+      })
+    });
 
     const data = await response.json();
-    
-    if (data.error) {
-      console.error('Gemini API error:', data.error);
-      return Response.json({ error: data.error.message }, { status: 500 });
-    }
-
-    const content = data.candidates[0].content.parts[0].text;
+    const content = data.content[0].text;
     const cleanContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     const result = JSON.parse(cleanContent);
 
-    console.log('=== GEMINI 3 PRO PLAYLIST ===');
+    console.log('=== OPUS 4.5 PLAYLIST ===');
     console.log('Location:', result.location);
     console.log('Mood:', result.mood);
     console.log('Tracks:', result.playlist?.length);
