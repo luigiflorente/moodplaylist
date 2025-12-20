@@ -79,7 +79,7 @@ export default function Home() {
   };
 
   const connectSpotify = () => {
-    const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID || '68ff042636ad42dfa8ed292f89d7d558';
+    const clientId = 'de6869f55ac7428eb12efe30cdb8a387';
     const redirectUri = encodeURIComponent('https://moodplaylist-ten.vercel.app/api/spotify-callback');
     const scopes = encodeURIComponent('playlist-modify-public playlist-modify-private');
     const authUrl = `https://accounts.spotify.com/authorize?response_type=code&client_id=${clientId}&scope=${scopes}&redirect_uri=${redirectUri}`;
@@ -135,9 +135,7 @@ export default function Home() {
         <div style={{
           position: 'fixed',
           inset: 0,
-          backgroundImage: `
-            url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='6' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")
-          `,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='6' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
           opacity: 0.12,
           pointerEvents: 'none'
         }} />
@@ -542,7 +540,6 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Spotify Playlist Button */}
               <div style={{
                 marginTop: '20px',
                 padding: '30px',
@@ -560,7 +557,7 @@ export default function Home() {
                     }}>
                       ✓ Playlist created with {playlistCreated.tracksAdded} tracks!
                     </p>
-                    <a
+                    
                       href={playlistCreated.playlistUrl}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -637,7 +634,6 @@ export default function Home() {
                 )}
               </div>
 
-              {/* Apple Music Links */}
               <div style={{
                 marginTop: '20px',
                 padding: '30px',
@@ -662,7 +658,7 @@ export default function Home() {
                   justifyContent: 'center'
                 }}>
                   {result.playlist?.map((track, i) => (
-                    <a
+                    
                       key={i}
                       href={`https://music.apple.com/search?term=${encodeURIComponent(track.artist + ' ' + track.title)}`}
                       target="_blank"
