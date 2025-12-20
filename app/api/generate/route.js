@@ -1,70 +1,3 @@
-function delay(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-async function analyzeTrack(artist, title) {
-  try {
-    const url = `https://track-analysis.p.rapidapi.com/pktx/analysis?song=${encodeURIComponent(title)}&artist=${encodeURIComponent(artist)}`;
-    
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'x-rapidapi-key': process.env.RAPIDAPI_KEY,
-        'x-rapidapi-host': 'track-analysis.p.rapidapi.com'
-      }
-    });
-    
-    if (!response.ok) return null;
-    
-    const data = await response.json();
-    
-    if (!data || !data.key) return null;
-    
-    return {
-      key: data.key,
-      mode: data.mode,
-      tempo: data.tempo,
-      happiness: data.happiness,
-      energy: data.energy,
-      danceability: data.danceability,
-      acousticness: data.acousticness,
-      popularity: data.popularity
-    };
-  } catch (error) {
-    return null;
-  }
-}
-
-function matchesParameters(trackInfo, params, strictLevel) {
-  if (!params || Object.keys(params).length === 0) return true;
-  
-  if (strictLevel >= 3 && params.mode && trackInfo.mode) {
-    if (trackInfo.mode.toLowerCase() !== params.mode.toLowerCase()) {
-      return false;
-    }
-  }
-  
-  if (strictLevel >= 2) {
-    if (params.happinessMax !== null && params.happinessMax !== undefined) {
-      if (trackInfo.happiness > params.happinessMax) return false;
-    }
-    if (params.happinessMin !== null && params.happinessMin !== undefined) {
-      if (trackInfo.happiness < params.happinessMin) return false;
-    }
-  }
-  
-  if (strictLevel >= 1) {
-    if (params.energyMax !== null && params.energyMax !== undefined) {
-      if (trackInfo.energy > params.energyMax) return false;
-    }
-    if (params.energyMin !== null && params.energyMin !== undefined) {
-      if (trackInfo.energy < params.energyMin) return false;
-    }
-  }
-  
-  return true;
-}
-
 export async function POST(request) {
   try {
     const { prompt } = await request.json();
@@ -80,7 +13,7 @@ export async function POST(request) {
     else if (currentHour >= 12) timeContext = 'afternoon';
     else timeContext = 'morning';
 
-    const step1Response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -89,130 +22,67 @@ export async function POST(request) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 2000,
+        max_tokens: 4000,
         messages: [
           {
             role: 'user',
-            content: `You are a music expert who DEEPLY understands the SOUL of places, not just their geography.
+            content: `You are a music expert who DEEPLY understands the SOUL of places and moments.
 
-Analyze this request: "${prompt}"
-Current time context: ${timeContext}
+User request: "${prompt}"
+Current time: ${timeContext}
 
-YOUR TASK: Think like someone who LIVES this experience. Don't just list artists from that country - think about what music you would ACTUALLY HEAR in that place.
+YOUR TASK: Create the PERFECT playlist for this moment. Think like someone who LIVES this experience.
 
-FOR EACH PLACE, CONSIDER:
-1. VISUAL ATMOSPHERE: Architecture, light, colors, decay or beauty
-2. HISTORY & SOUL: What happened here? What emotions does it carry?
-3. WHAT YOU HEAR: In bars, cafes, streets, car radios, family homes
-4. THE FEELING: Not geography, but emotion
+THINK ABOUT:
+1. VISUAL ATMOSPHERE: What does this place/moment look like? Light, colors, architecture
+2. EMOTIONAL SOUL: What feelings does this evoke? What memories?
+3. WHAT YOU'D ACTUALLY HEAR: In bars, cafes, homes, car radios in this situation
+4. THE VIBE: Not just geography, but the emotional truth
 
-EXAMPLES OF EXPERIENTIAL THINKING:
+EXAMPLES OF GOOD THINKING:
 
-KRAKOW at night is NOT just "Polish classical music". It's:
+KRAKOW AT NIGHT:
 - Smoky jazz bars in Kazimierz (Tomasz Stańko, Marcin Wasilewski)
 - Klezmer echoing through Jewish quarter (Kroke)
 - Post-soviet melancholy (Molchat Doma, Motorama)
-- Dark jazz for cold nights (Bohren & Der Club of Gore)
-- The weight of history (Górecki, Preisner - but also Portishead, Radiohead)
+- Dark atmospheric music (Bohren & Der Club of Gore, Portishead)
 
-POLISH FAMILY GATHERING is NOT art music. It's:
-- Classic Polish singers everyone knows (Czesław Niemen, Marek Grechuta, Anna German)
-- Folk ensembles (Mazowsze, Śląsk)
+POLISH FAMILY GATHERING:
+- Classic singers everyone knows (Czesław Niemen, Marek Grechuta, Anna German)
 - Beloved pop stars (Krzysztof Krawczyk, Maryla Rodowicz)
-- Songs that cross generations
+- Folk music (Mazowsze, Golec uOrkiestra)
+- Songs that make grandparents emotional
 
-NAPLES is NOT just "Italian pop". It's:
-- Blues and soul (Pino Daniele, James Senese)
-- Street energy, chaos, passion
-- Nu Genea, Napoli Centrale, Enzo Avitabile
+NAPLES SUNSET:
+- Pino Daniele, James Senese - the soul of Naples
+- Nu Genea, Napoli Centrale - modern Naples sound
+- Mediterranean warmth mixed with melancholy
 
-LISBON is NOT just "Fado". It's:
-- Saudade - longing for something lost
-- Amália Rodrigues, Madredeus, Ana Moura, Mariza
-
-Think: "What would ACTUALLY play in this situation?"
-
-IMPORTANT - PARAMETERS USE VALUES FROM 0 TO 100:
-- happiness: 0 = very sad, 50 = neutral, 100 = very happy
-- energy: 0 = very calm, 50 = moderate, 100 = very energetic
-
-PARAMETER RULES:
-- For MELANCHOLIC/SAD moods: mode "minor", happinessMax (e.g. 50)
-- For HAPPY/WARM moods: mode "major", happinessMin (e.g. 40)
-- For CALM moods: energyMax (e.g. 50)
-- For ENERGETIC moods: energyMin (e.g. 50)
-- Traditional/folk music from Eastern Europe is usually MINOR even when warm/nostalgic
-- For FAMILY/NOSTALGIC gatherings: be flexible with parameters
-
-Respond ONLY with JSON:
-{
-  "location": "the place identified (or 'unspecified' if none)",
-  "atmosphere": "describe the visual/emotional atmosphere in 2-3 sentences",
-  "mood": "the mood in 2-3 words",
-  "soundscape": "what music you'd hear in this specific situation",
-  "artists": ["mix of local AND international artists that FIT - 20-30 artists"],
-  "parameters": {
-    "mode": "minor" or "major" or null,
-    "happinessMax": number 0-100 or null,
-    "happinessMin": number 0-100 or null,
-    "energyMax": number 0-100 or null,
-    "energyMin": number 0-100 or null
-  }
-}`
-          }
-        ]
-      })
-    });
-
-    const step1Data = await step1Response.json();
-    const step1Content = step1Data.content[0].text;
-    const step1Clean = step1Content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-    const contextInfo = JSON.parse(step1Clean);
-
-    console.log('=== STEP 1: EXPERIENTIAL ANALYSIS ===');
-    console.log('Location:', contextInfo.location);
-    console.log('Atmosphere:', contextInfo.atmosphere);
-    console.log('Mood:', contextInfo.mood);
-    console.log('Soundscape:', contextInfo.soundscape);
-    console.log('Artists:', contextInfo.artists);
-    console.log('Parameters:', contextInfo.parameters);
-
-    const artistList = contextInfo.artists?.join(', ') || '';
-    
-    const step2Response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 8000,
-        messages: [
-          {
-            role: 'user',
-            content: `Create a playlist for this experience: "${prompt}"
-
-ATMOSPHERE: ${contextInfo.atmosphere}
-MOOD: ${contextInfo.mood}
-SOUNDSCAPE: ${contextInfo.soundscape}
-
-Use these artists and similar ones that fit the vibe:
-${artistList}
+LISBON RAIN:
+- Fado: Amália Rodrigues, Mariza, Ana Moura
+- Saudade feeling: Madredeus
+- Melancholic international: Portishead, Chet Baker
 
 RULES:
-1. Suggest 60 tracks total
-2. At least 60% should be from LOCAL artists of the identified location/culture
-3. Use REAL, EXISTING tracks - be accurate with titles and artist names
-4. Mix different eras and styles that fit the mood
-5. Think about what would ACTUALLY play in this situation
-6. Include both famous hits and beloved deep cuts
+1. Create EXACTLY 17 tracks
+2. At least 60% should be LOCAL artists from the identified place/culture
+3. Choose REAL, FAMOUS songs that definitely exist
+4. Match the MOOD perfectly - every song should feel right
+5. Mix eras: classics and contemporary
+6. Think about the FLOW - how songs connect to each other
 
-Respond ONLY with JSON:
+Respond ONLY with this JSON structure:
 {
-  "suggestedTracks": [
-    {"title": "song title", "artist": "artist name"}
+  "location": "the place/situation identified",
+  "atmosphere": "2-3 sentences describing the visual and emotional atmosphere",
+  "mood": "2-3 words capturing the mood",
+  "playlist": [
+    {
+      "title": "song title",
+      "artist": "artist name",
+      "year": "release year or approximate decade",
+      "why": "one short sentence why this fits"
+    }
   ]
 }`
           }
@@ -220,103 +90,23 @@ Respond ONLY with JSON:
       })
     });
 
-    const step2Data = await step2Response.json();
-    const step2Content = step2Data.content[0].text;
-    const step2Clean = step2Content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-    const tracksInfo = JSON.parse(step2Clean);
+    const data = await response.json();
+    const content = data.content[0].text;
+    const cleanContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    const result = JSON.parse(cleanContent);
 
-    console.log('=== STEP 2: TRACKS ===');
-    console.log('Total suggested:', tracksInfo.suggestedTracks?.length);
-
-    const params = contextInfo.parameters || {};
-    
-    const allAnalyzedTracks = [];
-    let checkedCount = 0;
-    let soundNetFailed = 0;
-    
-    const TARGET_ANALYZED = 25;
-    const MAX_CHECKS = 60;
-    
-    for (const track of tracksInfo.suggestedTracks || []) {
-      if (allAnalyzedTracks.length >= TARGET_ANALYZED) {
-        console.log(`Reached target of ${TARGET_ANALYZED} analyzed tracks, stopping early`);
-        break;
-      }
-      
-      if (checkedCount >= MAX_CHECKS) {
-        console.log(`Reached max checks limit of ${MAX_CHECKS}`);
-        break;
-      }
-      
-      checkedCount++;
-      
-      await delay(900);
-      
-      const audioParams = await analyzeTrack(track.artist, track.title);
-      
-      if (!audioParams) {
-        console.log(`SoundNet failed: ${track.title} - ${track.artist}`);
-        soundNetFailed++;
-        continue;
-      }
-      
-      const isDuplicate = allAnalyzedTracks.some(
-        t => t.title.toLowerCase() === track.title.toLowerCase() && 
-             t.artist.toLowerCase() === track.artist.toLowerCase()
-      );
-      
-      if (!isDuplicate) {
-        allAnalyzedTracks.push({
-          title: track.title,
-          artist: track.artist,
-          key: audioParams.key,
-          mode: audioParams.mode,
-          tempo: audioParams.tempo,
-          happiness: audioParams.happiness,
-          energy: audioParams.energy
-        });
-        console.log(`Analyzed [${allAnalyzedTracks.length}/${TARGET_ANALYZED}]: ${track.title} - ${track.artist} (happiness: ${audioParams.happiness}, mode: ${audioParams.mode})`);
-      }
-    }
-
-    console.log('=== FILTERING WITH FALLBACK ===');
-    console.log('Total analyzed tracks:', allAnalyzedTracks.length);
-    console.log('SoundNet failed:', soundNetFailed);
-    console.log('Tracks checked:', checkedCount);
-
-    let verifiedTracks = [];
-    let strictLevel = 3;
-    
-    while (strictLevel >= 0 && verifiedTracks.length < 12) {
-      verifiedTracks = allAnalyzedTracks.filter(track => 
-        matchesParameters(track, params, strictLevel)
-      );
-      
-      console.log(`Strict level ${strictLevel}: ${verifiedTracks.length} tracks pass`);
-      
-      if (verifiedTracks.length < 12) {
-        strictLevel--;
-        if (strictLevel === 2) console.log('Relaxing: removing mode filter');
-        if (strictLevel === 1) console.log('Relaxing: removing happiness filter');
-        if (strictLevel === 0) console.log('Relaxing: removing all filters');
-      }
-    }
-
-    verifiedTracks = verifiedTracks.slice(0, 17);
-
-    console.log('=== FINAL RESULT ===');
-    console.log('Total tracks:', verifiedTracks.length);
-    console.log('Final strict level:', strictLevel);
+    console.log('=== PLAYLIST GENERATED ===');
+    console.log('Location:', result.location);
+    console.log('Mood:', result.mood);
+    console.log('Tracks:', result.playlist?.length);
 
     return Response.json({
       interpretation: {
-        location: contextInfo.location,
-        mood: contextInfo.mood,
-        atmosphere: contextInfo.atmosphere,
-        soundscape: contextInfo.soundscape
+        location: result.location,
+        mood: result.mood,
+        atmosphere: result.atmosphere
       },
-      parameters: params,
-      playlist: verifiedTracks
+      playlist: result.playlist
     });
 
   } catch (error) {
