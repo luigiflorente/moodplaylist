@@ -340,4 +340,6 @@ Respond ONLY with JSON:
   } catch (error) {
     console.error('Error:', error);
     return Response.json({ error: 'Internal server error' }, { status: 500 });
+      }
+}
   
