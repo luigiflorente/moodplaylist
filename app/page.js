@@ -560,7 +560,7 @@ export default function Home() {
                     }}>
                       ✓ Playlist created with {playlistCreated.tracksAdded} tracks!
                     </p>
-                    
+                    <a
                       href={playlistCreated.playlistUrl}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -662,7 +662,7 @@ export default function Home() {
                   justifyContent: 'center'
                 }}>
                   {result.playlist?.map((track, i) => (
-                    
+                    <a
                       key={i}
                       href={`https://music.apple.com/search?term=${encodeURIComponent(track.artist + ' ' + track.title)}`}
                       target="_blank"
