@@ -170,6 +170,15 @@ LISBON is NOT just "Fado". It's:
 
 Think: "What would play in a bar in this place that would feel PERFECT?"
 
+IMPORTANT - PARAMETERS USE VALUES FROM 0 TO 100 (not 0 to 1):
+- happiness: 0 = very sad, 50 = neutral, 100 = very happy
+- energy: 0 = very calm, 50 = moderate, 100 = very energetic
+
+Example parameters:
+- Melancholic night: mode "minor", happinessMax 50, energyMax 60
+- Happy sunny day: mode "major", happinessMin 40, energyMin 40
+- Calm contemplative: happinessMax 60, energyMax 50
+
 Respond ONLY with JSON:
 {
   "location": "the place identified (or 'unspecified' if none)",
@@ -179,10 +188,10 @@ Respond ONLY with JSON:
   "artists": ["mix of local AND international artists that FIT this atmosphere - 15-20 artists"],
   "parameters": {
     "mode": "minor" or "major" or null,
-    "happinessMax": number or null,
-    "happinessMin": number or null,
-    "energyMax": number or null,
-    "energyMin": number or null
+    "happinessMax": number 0-100 or null,
+    "happinessMin": number 0-100 or null,
+    "energyMax": number 0-100 or null,
+    "energyMin": number 0-100 or null
   }
 }`
           }
@@ -333,3 +342,12 @@ Respond ONLY with JSON:
     return Response.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+```
+
+Vai su GitHub, cancella tutto in **route.js**, incolla questo, **Commit changes**.
+
+Ho aggiunto nel prompt:
+```
+IMPORTANT - PARAMETERS USE VALUES FROM 0 TO 100 (not 0 to 1):
+- happiness: 0 = very sad, 50 = neutral, 100 = very happy
+- energy: 0 = very calm, 50 = moderate, 100 = very energetic
