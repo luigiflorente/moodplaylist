@@ -73,27 +73,33 @@ async function analyzeTrack(artist, title) {
   }
 }
 
-function matchesParameters(trackInfo, params) {
+function matchesParameters(trackInfo, params, strictLevel) {
   if (!params || Object.keys(params).length === 0) return true;
   
-  if (params.mode && trackInfo.mode) {
+  // strictLevel: 3 = all filters, 2 = no mode, 1 = only energy, 0 = no filter
+  
+  if (strictLevel >= 3 && params.mode && trackInfo.mode) {
     if (trackInfo.mode.toLowerCase() !== params.mode.toLowerCase()) {
       return false;
     }
   }
   
-  if (params.happinessMax !== null && params.happinessMax !== undefined) {
-    if (trackInfo.happiness > params.happinessMax) return false;
-  }
-  if (params.happinessMin !== null && params.happinessMin !== undefined) {
-    if (trackInfo.happiness < params.happinessMin) return false;
+  if (strictLevel >= 2) {
+    if (params.happinessMax !== null && params.happinessMax !== undefined) {
+      if (trackInfo.happiness > params.happinessMax) return false;
+    }
+    if (params.happinessMin !== null && params.happinessMin !== undefined) {
+      if (trackInfo.happiness < params.happinessMin) return false;
+    }
   }
   
-  if (params.energyMax !== null && params.energyMax !== undefined) {
-    if (trackInfo.energy > params.energyMax) return false;
-  }
-  if (params.energyMin !== null && params.energyMin !== undefined) {
-    if (trackInfo.energy < params.energyMin) return false;
+  if (strictLevel >= 1) {
+    if (params.energyMax !== null && params.energyMax !== undefined) {
+      if (trackInfo.energy > params.energyMax) return false;
+    }
+    if (params.energyMin !== null && params.energyMin !== undefined) {
+      if (trackInfo.energy < params.energyMin) return false;
+    }
   }
   
   return true;
@@ -168,16 +174,18 @@ IMPORTANT - PARAMETERS USE VALUES FROM 0 TO 100:
 - energy: 0 = very calm, 50 = moderate, 100 = very energetic
 
 PARAMETER RULES:
-- For MELANCHOLIC/SAD moods: use happinessMax (e.g. 50), but DO NOT use happinessMin - let the saddest songs through!
+- For MELANCHOLIC/SAD moods: use happinessMax (e.g. 50), but DO NOT use happinessMin
 - For HAPPY/ENERGETIC moods: use happinessMin (e.g. 40), no happinessMax needed
 - For CALM moods: use energyMax (e.g. 50)
 - For ENERGETIC moods: use energyMin (e.g. 50)
 - Mode "minor" = sad/melancholic, "major" = happy/bright
+- IMPORTANT: Traditional/folk music from Eastern Europe is usually MINOR even when warm/nostalgic
 
 Example parameters:
-- Melancholic night: mode "minor", happinessMax 50, energyMax 70 (NO happinessMin!)
+- Melancholic night: mode "minor", happinessMax 50, energyMax 70
 - Happy sunny day: mode "major", happinessMin 40, energyMin 40
-- Calm contemplative: mode "minor", happinessMax 60, energyMax 50
+- Warm nostalgic (Polish/Eastern European): mode "minor", happinessMax 60, energyMax 60
+- Party energy: mode "major", happinessMin 50, energyMin 60
 
 Respond ONLY with JSON:
 {
@@ -311,11 +319,12 @@ Respond ONLY with JSON:
     const spotifyToken = await getSpotifyToken();
     
     const params = contextInfo.parameters || {};
-    const verifiedTracks = [];
+    
+    // Collect all tracks with their audio parameters first
+    const allAnalyzedTracks = [];
     let checkedCount = 0;
     
     for (const track of tracksInfo.suggestedTracks || []) {
-      if (verifiedTracks.length >= 17) break;
       if (checkedCount >= 50) break;
       
       checkedCount++;
@@ -336,17 +345,13 @@ Respond ONLY with JSON:
         continue;
       }
       
-      if (!matchesParameters(audioParams, params)) {
-        console.log(`Filtered out: ${track.title} (happiness: ${audioParams.happiness}, mode: ${audioParams.mode})`);
-        continue;
-      }
-      
-      const isDuplicate = verifiedTracks.some(
+      // Check for duplicates
+      const isDuplicate = allAnalyzedTracks.some(
         t => t.spotifyId === spotifyTrack.spotifyId
       );
       
       if (!isDuplicate) {
-        verifiedTracks.push({
+        allAnalyzedTracks.push({
           title: spotifyTrack.title,
           artist: spotifyTrack.artist,
           spotifyId: spotifyTrack.spotifyId,
@@ -357,12 +362,38 @@ Respond ONLY with JSON:
           happiness: audioParams.happiness,
           energy: audioParams.energy
         });
-        console.log(`Added: ${spotifyTrack.title} - ${spotifyTrack.artist} (happiness: ${audioParams.happiness}, mode: ${audioParams.mode})`);
+        console.log(`Analyzed: ${spotifyTrack.title} - ${spotifyTrack.artist} (happiness: ${audioParams.happiness}, mode: ${audioParams.mode})`);
       }
     }
 
+    console.log('=== FILTERING WITH FALLBACK ===');
+    console.log('Total analyzed tracks:', allAnalyzedTracks.length);
+
+    // Try filtering with decreasing strictness until we have enough tracks
+    let verifiedTracks = [];
+    let strictLevel = 3;
+    
+    while (strictLevel >= 0 && verifiedTracks.length < 12) {
+      verifiedTracks = allAnalyzedTracks.filter(track => 
+        matchesParameters(track, params, strictLevel)
+      );
+      
+      console.log(`Strict level ${strictLevel}: ${verifiedTracks.length} tracks pass`);
+      
+      if (verifiedTracks.length < 12) {
+        strictLevel--;
+        if (strictLevel === 2) console.log('Relaxing: removing mode filter');
+        if (strictLevel === 1) console.log('Relaxing: removing happiness filter');
+        if (strictLevel === 0) console.log('Relaxing: removing all filters');
+      }
+    }
+
+    // Take max 17 tracks
+    verifiedTracks = verifiedTracks.slice(0, 17);
+
     console.log('=== FINAL RESULT ===');
     console.log('Total tracks:', verifiedTracks.length);
+    console.log('Final strict level:', strictLevel);
 
     return Response.json({
       interpretation: {
