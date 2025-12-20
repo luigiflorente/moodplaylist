@@ -170,14 +170,21 @@ LISBON is NOT just "Fado". It's:
 
 Think: "What would play in a bar in this place that would feel PERFECT?"
 
-IMPORTANT - PARAMETERS USE VALUES FROM 0 TO 100 (not 0 to 1):
+IMPORTANT - PARAMETERS USE VALUES FROM 0 TO 100:
 - happiness: 0 = very sad, 50 = neutral, 100 = very happy
 - energy: 0 = very calm, 50 = moderate, 100 = very energetic
 
+PARAMETER RULES:
+- For MELANCHOLIC/SAD moods: use happinessMax (e.g. 50), but DO NOT use happinessMin - let the saddest songs through!
+- For HAPPY/ENERGETIC moods: use happinessMin (e.g. 40), no happinessMax needed
+- For CALM moods: use energyMax (e.g. 50)
+- For ENERGETIC moods: use energyMin (e.g. 50)
+- Mode "minor" = sad/melancholic, "major" = happy/bright
+
 Example parameters:
-- Melancholic night: mode "minor", happinessMax 50, energyMax 60
+- Melancholic night: mode "minor", happinessMax 50, energyMax 70 (NO happinessMin!)
 - Happy sunny day: mode "major", happinessMin 40, energyMin 40
-- Calm contemplative: happinessMax 60, energyMax 50
+- Calm contemplative: mode "minor", happinessMax 60, energyMax 50
 
 Respond ONLY with JSON:
 {
@@ -237,13 +244,20 @@ SOUNDSCAPE: ${contextInfo.soundscape}
 Use these artists (mix of local and international that FIT the vibe):
 ${artistList}
 
-RULES:
-1. Choose tracks that SOUND like this atmosphere, not just "from this place"
-2. Mix local artists with international artists that have the SAME FEELING
-3. Think: "Would this track feel perfect playing in a bar in this place?"
-4. Use ONLY FAMOUS tracks that DEFINITELY exist on Spotify
-5. Write titles and artists EXACTLY as they appear on Spotify
-6. Suggest 40 tracks
+CRITICAL RULES:
+1. Use ONLY the artist's MOST FAMOUS tracks - the ones everyone knows
+2. Write titles EXACTLY as they appear on Spotify (check spelling!)
+3. Examples of CORRECT famous tracks:
+   - Portishead: "Glory Box", "Sour Times", "Wandering Star"
+   - Radiohead: "Creep", "Karma Police", "No Surprises", "Everything In Its Right Place"
+   - Nils Frahm: "Says", "Re", "All Melody"
+   - Max Richter: "On the Nature of Daylight", "Spring 1", "Dream 3"
+   - Yann Tiersen: "Comptine d'un autre été, l'après-midi", "La Valse d'Amélie"
+   - GoGo Penguin: "Raven", "Hopopono", "Murmuration"
+   - Bohren & Der Club of Gore: "Midnight Black Earth", "Constant Fear"
+   - Molchat Doma: "Sudno", "Volny", "Discoteque"
+4. DO NOT invent track names - use only tracks you're CERTAIN exist
+5. Suggest 40 tracks
 
 Respond ONLY with JSON:
 {
@@ -340,6 +354,12 @@ Respond ONLY with JSON:
   } catch (error) {
     console.error('Error:', error);
     return Response.json({ error: 'Internal server error' }, { status: 500 });
-      }
+  }
 }
-  
+```
+
+Ho fatto due modifiche importanti:
+
+**1. Nel prompt Step 1** - Ho aggiunto regole chiare:
+```
+- For MELANCHOLIC/SAD moods: use happinessMax, but DO NOT use happinessMin - let the saddest songs through!
