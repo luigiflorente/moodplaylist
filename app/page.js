@@ -10,11 +10,11 @@ export default function Home() {
   const [error, setError] = useState(null);
 
   const examplePrompts = [
-    "Sono seduto a un bar a Napoli centro, caffè espresso in mano",
-    "Guido di notte a Cracovia con mia moglie, città illuminata",
-    "Domenica pomeriggio, piove, sto leggendo sul divano",
-    "Aperitivo al tramonto su una terrazza a Roma",
-    "Mattina presto in montagna, nebbia e silenzio"
+    "Guido di notte a Cracovia",
+    "Aperitivo a Napoli al tramonto",
+    "Passeggiata a Lisbona, piove leggero",
+    "Mattina a Berlino, caffè e sigaretta",
+    "Domenica pigra a Buenos Aires"
   ];
 
   const handleAnalyze = async () => {
@@ -64,92 +64,154 @@ export default function Home() {
     setError(null);
   };
 
+  // Componente VU Meter
+  const VUMeter = ({ value = 0, label }) => (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '8px'
+    }}>
+      <div style={{
+        width: '60px',
+        height: '60px',
+        borderRadius: '50%',
+        background: 'linear-gradient(145deg, #1a1a1a, #0a0a0a)',
+        border: '3px solid #2a2a2a',
+        boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.8), 0 0 20px rgba(255, 170, 50, 0.1)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative'
+      }}>
+        <div style={{
+          width: '8px',
+          height: '8px',
+          borderRadius: '50%',
+          background: value > 50 
+            ? 'radial-gradient(circle, #ff6b35 0%, #ff4500 100%)' 
+            : 'radial-gradient(circle, #ffaa32 0%, #ff8c00 100%)',
+          boxShadow: value > 50 
+            ? '0 0 15px #ff6b35, 0 0 30px #ff4500' 
+            : '0 0 15px #ffaa32, 0 0 30px #ff8c00',
+          animation: 'glow 2s ease-in-out infinite'
+        }} />
+      </div>
+      <span style={{
+        fontSize: '9px',
+        letterSpacing: '2px',
+        textTransform: 'uppercase',
+        color: '#666',
+        fontFamily: "'Inter', monospace"
+      }}>{label}</span>
+    </div>
+  );
+
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(165deg, #1a1714 0%, #2d2620 50%, #1f1b17 100%)',
-      fontFamily: "'EB Garamond', Georgia, serif",
-      color: '#e8e0d5',
+      background: '#000000',
+      fontFamily: "'Inter', -apple-system, sans-serif",
+      color: '#e0e0e0',
       position: 'relative',
       overflow: 'hidden'
     }}>
-      {/* Texture overlay */}
+      {/* Grana vintage */}
       <div style={{
         position: 'fixed',
         inset: 0,
         backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-        opacity: 0.03,
+        opacity: 0.04,
         pointerEvents: 'none'
       }} />
 
-      {/* Warm ambient glow */}
+      {/* Luce calda dall'alto */}
       <div style={{
         position: 'fixed',
-        top: '-20%',
-        right: '-10%',
-        width: '60%',
+        top: '-30%',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '100%',
         height: '60%',
-        background: 'radial-gradient(ellipse, rgba(180, 120, 60, 0.08) 0%, transparent 70%)',
+        background: 'radial-gradient(ellipse, rgba(255, 150, 50, 0.08) 0%, transparent 60%)',
         pointerEvents: 'none'
       }} />
 
       <div style={{
-        maxWidth: '900px',
+        maxWidth: '800px',
         margin: '0 auto',
-        padding: '60px 40px',
+        padding: '40px 20px',
         position: 'relative',
         zIndex: 1
       }}>
-        {/* Header */}
-        <header style={{ marginBottom: '80px', textAlign: 'center' }}>
+        
+        {/* Header - Stile amplificatore */}
+        <header style={{ 
+          marginBottom: '50px', 
+          textAlign: 'center',
+          padding: '40px 30px',
+          background: 'linear-gradient(180deg, #0d0d0d 0%, #050505 100%)',
+          borderRadius: '8px',
+          border: '1px solid #1a1a1a',
+          boxShadow: '0 10px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.03)'
+        }}>
+          {/* Logo/Brand */}
           <div style={{
-            fontSize: '11px',
-            letterSpacing: '4px',
+            fontSize: '10px',
+            letterSpacing: '6px',
             textTransform: 'uppercase',
-            color: '#a08060',
-            marginBottom: '20px',
-            fontFamily: "'Inter', sans-serif",
-            fontWeight: 500
+            color: '#ffaa32',
+            marginBottom: '8px',
+            fontWeight: 600,
+            textShadow: '0 0 20px rgba(255, 170, 50, 0.5)'
           }}>
-            Traduttore di Contesti Musicali
+            ● REC
           </div>
+          
           <h1 style={{
-            fontSize: 'clamp(42px, 8vw, 72px)',
-            fontWeight: 400,
-            margin: 0,
-            lineHeight: 1.1,
-            fontStyle: 'italic',
-            background: 'linear-gradient(135deg, #e8e0d5 0%, #c4a882 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
+            fontSize: 'clamp(32px, 7vw, 48px)',
+            fontWeight: 700,
+            margin: '0 0 8px 0',
+            lineHeight: 1,
+            color: '#ffffff',
+            textShadow: '0 2px 10px rgba(0,0,0,0.5)',
+            letterSpacing: '-1px'
           }}>
-            Mood Playlist
+            MOOD PLAYLIST
           </h1>
+          
           <p style={{
-            fontSize: '18px',
-            color: '#9a8a78',
-            marginTop: '24px',
-            fontWeight: 300,
-            maxWidth: '500px',
-            marginLeft: 'auto',
-            marginRight: 'auto',
-            lineHeight: 1.7
+            fontSize: '11px',
+            color: '#555',
+            margin: 0,
+            letterSpacing: '3px',
+            textTransform: 'uppercase'
           }}>
-            Descrivi dove sei, cosa senti, cosa vedi.<br/>
-            La musica seguirà.
+            Analog Music Generator
           </p>
+
+          {/* VU Meters decorativi */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '30px',
+            marginTop: '30px'
+          }}>
+            <VUMeter value={30} label="L" />
+            <VUMeter value={45} label="R" />
+          </div>
         </header>
 
         {/* Error display */}
         {error && (
           <div style={{
-            background: 'rgba(180, 60, 60, 0.1)',
-            border: '1px solid rgba(180, 60, 60, 0.3)',
+            background: 'rgba(255, 50, 50, 0.1)',
+            border: '1px solid rgba(255, 50, 50, 0.3)',
             borderRadius: '4px',
-            padding: '20px',
-            marginBottom: '30px',
-            color: '#e8a0a0'
+            padding: '16px 20px',
+            marginBottom: '24px',
+            color: '#ff6b6b',
+            fontSize: '14px'
           }}>
             {error}
           </div>
@@ -158,30 +220,33 @@ export default function Home() {
         {/* Main Input Area */}
         {!result && (
           <div style={{
-            background: 'rgba(255, 250, 245, 0.02)',
-            border: '1px solid rgba(180, 140, 100, 0.15)',
-            borderRadius: '4px',
-            padding: '40px',
-            marginBottom: '40px',
-            backdropFilter: 'blur(10px)'
+            background: 'linear-gradient(180deg, #0a0a0a 0%, #050505 100%)',
+            border: '1px solid #1a1a1a',
+            borderRadius: '8px',
+            padding: '30px',
+            marginBottom: '30px',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.02)'
           }}>
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Sono seduto a un bar a Napoli centro..."
+              placeholder="Descrivi dove sei, cosa senti..."
               disabled={isAnalyzing}
               style={{
                 width: '100%',
-                minHeight: '140px',
-                background: 'transparent',
-                border: 'none',
+                minHeight: '100px',
+                background: '#000',
+                border: '1px solid #222',
+                borderRadius: '4px',
                 outline: 'none',
-                color: '#e8e0d5',
-                fontSize: '22px',
-                fontFamily: "'EB Garamond', Georgia, serif",
-                lineHeight: 1.7,
+                color: '#ffaa32',
+                fontSize: '18px',
+                fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                lineHeight: 1.6,
                 resize: 'none',
-                opacity: isAnalyzing ? 0.5 : 1
+                padding: '16px',
+                opacity: isAnalyzing ? 0.5 : 1,
+                boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.5)'
               }}
             />
             
@@ -189,16 +254,15 @@ export default function Home() {
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              marginTop: '30px',
-              paddingTop: '30px',
-              borderTop: '1px solid rgba(180, 140, 100, 0.1)'
+              marginTop: '20px'
             }}>
               <span style={{
-                fontSize: '13px',
-                color: '#6a5a4a',
-                fontFamily: "'Inter', sans-serif"
+                fontSize: '11px',
+                color: '#444',
+                fontFamily: "'JetBrains Mono', monospace",
+                letterSpacing: '1px'
               }}>
-                {input.length > 0 ? `${input.length} caratteri` : 'Descrivi il tuo momento'}
+                {input.length > 0 ? `${input.length} CHAR` : 'READY'}
               </span>
               
               <button
@@ -206,314 +270,263 @@ export default function Home() {
                 disabled={!input.trim() || isAnalyzing}
                 style={{
                   background: input.trim() && !isAnalyzing 
-                    ? 'linear-gradient(135deg, #8a6a4a 0%, #6a4a2a 100%)'
-                    : 'rgba(100, 80, 60, 0.3)',
+                    ? 'linear-gradient(180deg, #ffaa32 0%, #ff8c00 100%)'
+                    : '#1a1a1a',
                   border: 'none',
-                  color: '#e8e0d5',
-                  padding: '16px 40px',
-                  fontSize: '14px',
-                  fontFamily: "'Inter', sans-serif",
-                  fontWeight: 500,
+                  color: input.trim() && !isAnalyzing ? '#000' : '#444',
+                  padding: '14px 32px',
+                  fontSize: '12px',
+                  fontWeight: 700,
                   letterSpacing: '2px',
                   textTransform: 'uppercase',
                   cursor: input.trim() && !isAnalyzing ? 'pointer' : 'not-allowed',
-                  borderRadius: '2px',
-                  transition: 'all 0.3s ease',
-                  opacity: input.trim() ? 1 : 0.5
+                  borderRadius: '4px',
+                  transition: 'all 0.2s ease',
+                  boxShadow: input.trim() && !isAnalyzing 
+                    ? '0 0 20px rgba(255, 170, 50, 0.3)' 
+                    : 'none'
                 }}
               >
-                {isAnalyzing ? 'Analizzo...' : 'Genera Playlist'}
+                {isAnalyzing ? '● GENERATING...' : '▶ GENERATE'}
               </button>
             </div>
           </div>
         )}
 
-        {/* Analysis Progress */}
+        {/* Loading State */}
         {isAnalyzing && (
           <div style={{
             textAlign: 'center',
-            padding: '60px 0'
+            padding: '60px 20px',
+            background: 'linear-gradient(180deg, #0a0a0a 0%, #050505 100%)',
+            borderRadius: '8px',
+            border: '1px solid #1a1a1a'
           }}>
             <div style={{
-              display: 'flex',
-              justifyContent: 'center',
-              gap: '40px',
-              marginBottom: '40px'
-            }}>
-              {['analyzing', 'translating', 'generating'].map((p, i) => (
-                <div key={p} style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  opacity: phase === p ? 1 : (
-                    ['analyzing', 'translating', 'generating'].indexOf(phase) > i ? 0.4 : 0.2
-                  ),
-                  transition: 'opacity 0.5s ease'
-                }}>
-                  <div style={{
-                    width: '12px',
-                    height: '12px',
-                    borderRadius: '50%',
-                    background: phase === p ? '#c4a882' : 'rgba(180, 140, 100, 0.3)',
-                    marginBottom: '12px',
-                    animation: phase === p ? 'pulse 1.5s ease-in-out infinite' : 'none'
-                  }} />
-                  <span style={{
-                    fontSize: '12px',
-                    fontFamily: "'Inter', sans-serif",
-                    letterSpacing: '1px',
-                    textTransform: 'uppercase',
-                    color: phase === p ? '#c4a882' : '#6a5a4a'
-                  }}>
-                    {p === 'analyzing' && 'Interpreto'}
-                    {p === 'translating' && 'Traduco'}
-                    {p === 'generating' && 'Genero'}
-                  </span>
-                </div>
-              ))}
-            </div>
+              width: '60px',
+              height: '60px',
+              margin: '0 auto 24px',
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, #ffaa32 0%, #ff8c00 100%)',
+              animation: 'pulse 1.5s ease-in-out infinite',
+              boxShadow: '0 0 30px rgba(255, 170, 50, 0.5)'
+            }} />
             <p style={{
-              color: '#9a8a78',
-              fontStyle: 'italic',
-              fontSize: '18px'
+              color: '#ffaa32',
+              fontSize: '12px',
+              letterSpacing: '3px',
+              textTransform: 'uppercase',
+              margin: 0
             }}>
-              {phase === 'analyzing' && "Leggo il contesto, l'atmosfera, le sfumature..."}
-              {phase === 'translating' && 'Traduco in parametri musicologici...'}
-              {phase === 'generating' && 'Compongo la playlist perfetta...'}
+              {phase === 'analyzing' && '● ANALYZING CONTEXT...'}
+              {phase === 'translating' && '● FINDING LOCAL ARTISTS...'}
+              {phase === 'generating' && '● GENERATING PLAYLIST...'}
             </p>
           </div>
         )}
 
         {/* Results */}
         {result && (
-          <div style={{ animation: 'fadeIn 0.8s ease' }}>
-            {/* Original prompt */}
+          <div>
+            {/* Current Input Display */}
             <div style={{
-              background: 'rgba(180, 140, 100, 0.05)',
-              border: '1px solid rgba(180, 140, 100, 0.1)',
-              borderRadius: '4px',
-              padding: '24px 30px',
-              marginBottom: '40px',
+              background: '#0a0a0a',
+              border: '1px solid #1a1a1a',
+              borderRadius: '8px',
+              padding: '20px 24px',
+              marginBottom: '24px',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
               flexWrap: 'wrap',
-              gap: '20px'
+              gap: '16px'
             }}>
-              <p style={{
-                margin: 0,
-                fontStyle: 'italic',
-                fontSize: '18px',
-                color: '#c4a882',
-                flex: 1
-              }}>
-                "{input}"
-              </p>
+              <div>
+                <div style={{
+                  fontSize: '9px',
+                  letterSpacing: '2px',
+                  color: '#444',
+                  marginBottom: '6px',
+                  textTransform: 'uppercase'
+                }}>
+                  INPUT SIGNAL
+                </div>
+                <p style={{
+                  margin: 0,
+                  fontSize: '16px',
+                  color: '#ffaa32',
+                  fontFamily: "'JetBrains Mono', monospace"
+                }}>
+                  "{input}"
+                </p>
+              </div>
               <button
                 onClick={resetAll}
                 style={{
                   background: 'transparent',
-                  border: '1px solid rgba(180, 140, 100, 0.3)',
-                  color: '#9a8a78',
+                  border: '1px solid #333',
+                  color: '#666',
                   padding: '10px 20px',
-                  fontSize: '12px',
-                  fontFamily: "'Inter', sans-serif",
-                  letterSpacing: '1px',
+                  fontSize: '11px',
+                  letterSpacing: '2px',
                   textTransform: 'uppercase',
                   cursor: 'pointer',
-                  borderRadius: '2px'
+                  borderRadius: '4px',
+                  transition: 'all 0.2s ease'
                 }}
               >
-                Nuovo
+                ✕ RESET
               </button>
             </div>
 
-            {/* Interpretation */}
-            <section style={{ marginBottom: '50px' }}>
-              <h2 style={{
-                fontSize: '12px',
-                fontFamily: "'Inter', sans-serif",
-                letterSpacing: '3px',
-                textTransform: 'uppercase',
-                color: '#6a5a4a',
-                marginBottom: '24px'
-              }}>
-                Interpretazione
-              </h2>
+            {/* Location Info */}
+            {result.interpretation && (
               <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                gap: '16px'
-              }}>
-                {result.interpretation && Object.entries(result.interpretation).map(([key, value]) => (
-                  <div key={key} style={{
-                    background: 'rgba(255, 250, 245, 0.02)',
-                    padding: '18px',
-                    borderLeft: '2px solid rgba(180, 140, 100, 0.3)'
-                  }}>
-                    <div style={{
-                      fontSize: '10px',
-                      fontFamily: "'Inter', sans-serif",
-                      letterSpacing: '1px',
-                      textTransform: 'uppercase',
-                      color: '#6a5a4a',
-                      marginBottom: '8px'
-                    }}>
-                      {key === 'mood' && 'Mood'}
-                      {key === 'energy' && 'Energia'}
-                      {key === 'texture' && 'Texture'}
-                      {key === 'setting' && 'Setting'}
-                      {key === 'movement' && 'Movimento'}
-                      {key === 'timeOfDay' && 'Momento'}
-                      {key === 'atmosphere' && 'Atmosfera'}
-                    </div>
-                    <div style={{
-                      fontSize: '15px',
-                      color: '#c4a882',
-                      lineHeight: 1.4
-                    }}>
-                      {value}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* Technical Parameters */}
-            <section style={{ marginBottom: '50px' }}>
-              <h2 style={{
-                fontSize: '12px',
-                fontFamily: "'Inter', sans-serif",
-                letterSpacing: '3px',
-                textTransform: 'uppercase',
-                color: '#6a5a4a',
-                marginBottom: '24px'
-              }}>
-                Parametri Musicologici
-              </h2>
-              <div style={{
-                background: 'rgba(0, 0, 0, 0.2)',
-                borderRadius: '4px',
+                background: '#0a0a0a',
+                border: '1px solid #1a1a1a',
+                borderRadius: '8px',
                 padding: '24px',
-                fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
-                fontSize: '12px',
-                lineHeight: 1.9,
-                overflowX: 'auto'
+                marginBottom: '24px'
               }}>
-                <div style={{ color: '#6a8a5a' }}>// Traduzione in parametri Spotify</div>
-                {result.parameters && (
-                  <>
-                    <div><span style={{ color: '#8a6a4a' }}>valence:</span> <span style={{ color: '#c4a882' }}>{result.parameters.valence}</span> <span style={{ color: '#5a5a5a' }}>// positività emotiva</span></div>
-                    <div><span style={{ color: '#8a6a4a' }}>energy:</span> <span style={{ color: '#c4a882' }}>{result.parameters.energy}</span> <span style={{ color: '#5a5a5a' }}>// intensità percepita</span></div>
-                    <div><span style={{ color: '#8a6a4a' }}>tempo:</span> <span style={{ color: '#c4a882' }}>{result.parameters.tempo_min}-{result.parameters.tempo_max} BPM</span> <span style={{ color: '#5a5a5a' }}>// target: {result.parameters.tempo_target}</span></div>
-                    <div><span style={{ color: '#8a6a4a' }}>acousticness:</span> <span style={{ color: '#c4a882' }}>{result.parameters.acousticness}</span></div>
-                    <div><span style={{ color: '#8a6a4a' }}>instrumentalness:</span> <span style={{ color: '#c4a882' }}>{result.parameters.instrumentalness}</span></div>
-                    <div><span style={{ color: '#8a6a4a' }}>danceability:</span> <span style={{ color: '#c4a882' }}>{result.parameters.danceability}</span></div>
-                    <div><span style={{ color: '#8a6a4a' }}>mode:</span> <span style={{ color: '#c4a882' }}>"{result.parameters.mode}"</span></div>
-                  </>
-                )}
-                <div style={{ marginTop: '12px', color: '#6a8a5a' }}>// Generi seed</div>
-                <div><span style={{ color: '#8a6a4a' }}>genres:</span> [<span style={{ color: '#c4a882' }}>{result.genres?.map(g => `"${g}"`).join(', ')}</span>]</div>
+                <div style={{
+                  fontSize: '9px',
+                  letterSpacing: '2px',
+                  color: '#444',
+                  marginBottom: '16px',
+                  textTransform: 'uppercase'
+                }}>
+                  ● SIGNAL ANALYSIS
+                </div>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                  gap: '16px'
+                }}>
+                  {result.interpretation.location && (
+                    <div>
+                      <div style={{ fontSize: '10px', color: '#555', marginBottom: '4px', letterSpacing: '1px' }}>LOCATION</div>
+                      <div style={{ fontSize: '16px', color: '#fff' }}>{result.interpretation.location}</div>
+                    </div>
+                  )}
+                  {result.interpretation.mood && (
+                    <div>
+                      <div style={{ fontSize: '10px', color: '#555', marginBottom: '4px', letterSpacing: '1px' }}>MOOD</div>
+                      <div style={{ fontSize: '16px', color: '#ffaa32' }}>{result.interpretation.mood}</div>
+                    </div>
+                  )}
+                  {result.interpretation.region && (
+                    <div>
+                      <div style={{ fontSize: '10px', color: '#555', marginBottom: '4px', letterSpacing: '1px' }}>REGION</div>
+                      <div style={{ fontSize: '16px', color: '#888' }}>{result.interpretation.region}</div>
+                    </div>
+                  )}
+                </div>
               </div>
-            </section>
+            )}
 
             {/* Playlist */}
-            <section>
-              <h2 style={{
-                fontSize: '12px',
-                fontFamily: "'Inter', sans-serif",
-                letterSpacing: '3px',
-                textTransform: 'uppercase',
-                color: '#6a5a4a',
-                marginBottom: '24px'
-              }}>
-                La Tua Playlist
-              </h2>
+            <div style={{
+              background: '#0a0a0a',
+              border: '1px solid #1a1a1a',
+              borderRadius: '8px',
+              overflow: 'hidden'
+            }}>
               <div style={{
+                padding: '20px 24px',
+                borderBottom: '1px solid #1a1a1a',
                 display: 'flex',
-                flexDirection: 'column',
-                gap: '2px'
+                justifyContent: 'space-between',
+                alignItems: 'center'
               }}>
+                <div style={{
+                  fontSize: '9px',
+                  letterSpacing: '2px',
+                  color: '#444',
+                  textTransform: 'uppercase'
+                }}>
+                  ● OUTPUT — {result.playlist?.length || 0} TRACKS
+                </div>
+                <div style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  background: '#ff3333',
+                  boxShadow: '0 0 10px #ff3333',
+                  animation: 'pulse 2s ease-in-out infinite'
+                }} />
+              </div>
+              
+              <div>
                 {result.playlist?.map((track, i) => (
                   <div
                     key={i}
                     style={{
                       display: 'grid',
-                      gridTemplateColumns: '36px 1fr auto',
-                      alignItems: 'start',
+                      gridTemplateColumns: '40px 1fr auto',
+                      alignItems: 'center',
                       gap: '16px',
-                      padding: '18px',
-                      background: i % 2 === 0 ? 'rgba(255, 250, 245, 0.02)' : 'transparent',
-                      borderRadius: '2px',
+                      padding: '16px 24px',
+                      borderBottom: i < result.playlist.length - 1 ? '1px solid #111' : 'none',
                       transition: 'background 0.2s ease',
                       cursor: 'pointer'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(180, 140, 100, 0.08)'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = i % 2 === 0 ? 'rgba(255, 250, 245, 0.02)' : 'transparent'}
+                    onMouseEnter={(e) => e.currentTarget.style.background = '#111'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                   >
                     <span style={{
                       fontSize: '14px',
-                      color: '#5a4a3a',
-                      fontFamily: "'Inter', sans-serif",
-                      paddingTop: '2px'
+                      color: '#333',
+                      fontFamily: "'JetBrains Mono', monospace",
+                      fontWeight: 600
                     }}>
                       {String(i + 1).padStart(2, '0')}
                     </span>
                     <div>
                       <div style={{
-                        fontSize: '17px',
-                        color: '#e8e0d5',
-                        marginBottom: '4px'
+                        fontSize: '15px',
+                        color: '#fff',
+                        marginBottom: '2px',
+                        fontWeight: 500
                       }}>
                         {track.title}
                       </div>
                       <div style={{
-                        fontSize: '14px',
-                        color: '#8a7a6a'
+                        fontSize: '13px',
+                        color: '#666'
                       }}>
                         {track.artist}
-                      </div>
-                      <div style={{
-                        fontSize: '13px',
-                        color: '#6a5a4a',
-                        fontStyle: 'italic',
-                        marginTop: '6px',
-                        lineHeight: 1.4
-                      }}>
-                        {track.reason}
                       </div>
                     </div>
                     <span style={{
                       fontSize: '12px',
-                      color: '#5a4a3a',
-                      fontFamily: "'Inter', sans-serif"
+                      color: '#333',
+                      fontFamily: "'JetBrains Mono', monospace"
                     }}>
                       {track.year}
                     </span>
                   </div>
                 ))}
               </div>
-            </section>
+            </div>
 
-            {/* Individual track links */}
+            {/* Apple Music Links */}
             <div style={{
-              marginTop: '50px',
-              padding: '30px',
-              background: 'rgba(255, 255, 255, 0.02)',
-              borderRadius: '4px',
-              border: '1px solid rgba(180, 140, 100, 0.1)'
+              marginTop: '24px',
+              padding: '24px',
+              background: '#0a0a0a',
+              borderRadius: '8px',
+              border: '1px solid #1a1a1a'
             }}>
-              <p style={{
-                color: '#6a5a4a',
-                fontSize: '12px',
-                fontFamily: "'Inter', sans-serif",
-                letterSpacing: '1px',
+              <div style={{
+                fontSize: '9px',
+                letterSpacing: '2px',
+                color: '#444',
+                marginBottom: '16px',
                 textTransform: 'uppercase',
-                margin: '0 0 16px 0',
                 textAlign: 'center'
               }}>
-                Apri su Apple Music
-              </p>
+                OPEN IN APPLE MUSIC
+              </div>
               <div style={{
                 display: 'flex',
                 flexWrap: 'wrap',
@@ -521,7 +534,7 @@ export default function Home() {
                 justifyContent: 'center'
               }}>
                 {result.playlist?.map((track, i) => (
-                  <a
+                  
                     key={i}
                     href={`https://music.apple.com/search?term=${encodeURIComponent(track.artist + ' ' + track.title)}`}
                     target="_blank"
@@ -530,20 +543,17 @@ export default function Home() {
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: '6px',
-                      background: 'rgba(180, 140, 100, 0.1)',
-                      color: '#c4a882',
-                      padding: '10px 16px',
-                      fontSize: '13px',
-                      fontFamily: "'Inter', sans-serif",
+                      background: '#111',
+                      color: '#888',
+                      padding: '8px 14px',
+                      fontSize: '12px',
                       textDecoration: 'none',
                       borderRadius: '20px',
+                      border: '1px solid #222',
                       transition: 'all 0.2s ease'
                     }}
                   >
-                    <span style={{ 
-                      opacity: 0.5,
-                      fontSize: '10px'
-                    }}>
+                    <span style={{ color: '#444', fontSize: '10px' }}>
                       {String(i + 1).padStart(2, '0')}
                     </span>
                     {track.title}
@@ -556,22 +566,21 @@ export default function Home() {
 
         {/* Example prompts */}
         {!result && !isAnalyzing && (
-          <div style={{ marginTop: '60px' }}>
+          <div>
             <div style={{
-              fontSize: '11px',
-              fontFamily: "'Inter', sans-serif",
+              fontSize: '9px',
               letterSpacing: '2px',
               textTransform: 'uppercase',
-              color: '#5a4a3a',
-              marginBottom: '20px',
+              color: '#333',
+              marginBottom: '16px',
               textAlign: 'center'
             }}>
-              Esempi
+              PRESETS
             </div>
             <div style={{
               display: 'flex',
               flexWrap: 'wrap',
-              gap: '10px',
+              gap: '8px',
               justifyContent: 'center'
             }}>
               {examplePrompts.map((prompt, i) => (
@@ -579,15 +588,13 @@ export default function Home() {
                   key={i}
                   onClick={() => setInput(prompt)}
                   style={{
-                    background: 'transparent',
-                    border: '1px solid rgba(180, 140, 100, 0.2)',
-                    color: '#8a7a6a',
-                    padding: '12px 20px',
-                    fontSize: '14px',
-                    fontFamily: "'EB Garamond', Georgia, serif",
-                    fontStyle: 'italic',
+                    background: '#0a0a0a',
+                    border: '1px solid #1a1a1a',
+                    color: '#555',
+                    padding: '10px 16px',
+                    fontSize: '13px',
                     cursor: 'pointer',
-                    borderRadius: '2px',
+                    borderRadius: '4px',
                     transition: 'all 0.2s ease'
                   }}
                 >
@@ -597,7 +604,35 @@ export default function Home() {
             </div>
           </div>
         )}
+
+        {/* Footer */}
+        <footer style={{
+          marginTop: '60px',
+          textAlign: 'center',
+          padding: '20px',
+          borderTop: '1px solid #111'
+        }}>
+          <p style={{
+            fontSize: '10px',
+            color: '#333',
+            letterSpacing: '2px',
+            margin: 0
+          }}>
+            BLACKSTARS STUDIO © 2024
+          </p>
+        </footer>
       </div>
+
+      <style jsx global>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+        @keyframes glow {
+          0%, 100% { box-shadow: 0 0 15px currentColor, 0 0 30px currentColor; }
+          50% { box-shadow: 0 0 20px currentColor, 0 0 40px currentColor; }
+        }
+      `}</style>
     </div>
   );
 }
