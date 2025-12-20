@@ -1,9 +1,7 @@
-// Funzione per aspettare
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Funzione per ottenere token Spotify
 async function getSpotifyToken() {
   const response = await fetch('https://accounts.spotify.com/api/token', {
     method: 'POST',
@@ -20,7 +18,6 @@ async function getSpotifyToken() {
   return data.access_token;
 }
 
-// Funzione per cercare brano su Spotify
 async function searchSpotify(token, artist, title) {
   const query = encodeURIComponent(`track:${title} artist:${artist}`);
   const response = await fetch(
@@ -43,7 +40,6 @@ async function searchSpotify(token, artist, title) {
   return null;
 }
 
-// Funzione per analizzare brano con SoundNet
 async function analyzeTrack(artist, title) {
   try {
     const url = `https://track-analysis.p.rapidapi.com/pktx/analysis?song=${encodeURIComponent(title)}&artist=${encodeURIComponent(artist)}`;
@@ -77,7 +73,6 @@ async function analyzeTrack(artist, title) {
   }
 }
 
-// Funzione per verificare se il brano corrisponde ai parametri
 function matchesParameters(trackInfo, params) {
   if (!params || Object.keys(params).length === 0) return true;
   
@@ -112,7 +107,6 @@ export async function POST(request) {
       return Response.json({ error: 'Prompt mancante' }, { status: 400 });
     }
 
-    // Ottieni l'ora attuale per contesto
     const currentHour = new Date().getHours();
     let timeContext = 'daytime';
     if (currentHour >= 22 || currentHour < 6) timeContext = 'late night';
@@ -120,7 +114,6 @@ export async function POST(request) {
     else if (currentHour >= 12) timeContext = 'afternoon';
     else timeContext = 'morning';
 
-    // STEP 1: Analisi esperienziale del contesto
     const step1Response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -219,7 +212,6 @@ Respond ONLY with JSON:
     console.log('Artists:', contextInfo.artists);
     console.log('Parameters:', contextInfo.parameters);
 
-    // STEP 2: Chiedi brani specifici con approccio esperienziale
     const artistList = contextInfo.artists?.join(', ') || '';
     
     const step2Response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -278,7 +270,6 @@ Respond ONLY with JSON:
     console.log('=== STEP 2: TRACKS ===');
     console.log('Total suggested:', tracksInfo.suggestedTracks?.length);
 
-    // Ottieni token Spotify
     const spotifyToken = await getSpotifyToken();
     
     const params = contextInfo.parameters || {};
@@ -291,7 +282,6 @@ Respond ONLY with JSON:
       
       checkedCount++;
       
-      // Verifica su Spotify
       const spotifyTrack = await searchSpotify(spotifyToken, track.artist, track.title);
       
       if (!spotifyTrack) {
@@ -299,10 +289,8 @@ Respond ONLY with JSON:
         continue;
       }
       
-      // Aspetta per rate limit SoundNet
       await delay(1100);
       
-      // Ottieni parametri da SoundNet
       const audioParams = await analyzeTrack(track.artist, track.title);
       
       if (!audioParams) {
@@ -310,13 +298,11 @@ Respond ONLY with JSON:
         continue;
       }
       
-      // Verifica se corrisponde ai parametri mood
       if (!matchesParameters(audioParams, params)) {
         console.log(`Filtered out: ${track.title} (happiness: ${audioParams.happiness}, mode: ${audioParams.mode})`);
         continue;
       }
       
-      // Controlla duplicati
       const isDuplicate = verifiedTracks.some(
         t => t.spotifyId === spotifyTrack.spotifyId
       );
@@ -356,10 +342,3 @@ Respond ONLY with JSON:
     return Response.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
-```
-
-Ho fatto due modifiche importanti:
-
-**1. Nel prompt Step 1** - Ho aggiunto regole chiare:
-```
-- For MELANCHOLIC/SAD moods: use happinessMax, but DO NOT use happinessMin - let the saddest songs through!
