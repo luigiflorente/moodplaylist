@@ -17,7 +17,14 @@ const translations = {
     tracksSelected: 'TRACKS SELECTED',
     play: '▶ PLAY',
     orTryWith: 'Or try with',
-    characters: 'characters'
+    characters: 'characters',
+    presets: [
+      "driving at night, lost in thoughts",
+      "lazy sunday, it's raining outside",
+      "sunset drinks in New York",
+      "walking in London, foggy morning",
+      "feeling melancholic tonight"
+    ]
   },
   it: {
     tagline: 'Musica per ogni momento',
@@ -33,7 +40,14 @@ const translations = {
     tracksSelected: 'BRANI SELEZIONATI',
     play: '▶ ASCOLTA',
     orTryWith: 'Oppure prova con',
-    characters: 'caratteri'
+    characters: 'caratteri',
+    presets: [
+      "sono in macchina di notte, pensieroso",
+      "domenica pigra, fuori piove",
+      "aperitivo al tramonto a Roma",
+      "passeggiata a Parigi, aria d'autunno",
+      "mi sento malinconico stasera"
+    ]
   },
   pl: {
     tagline: 'Muzyka na każdy moment',
@@ -49,7 +63,14 @@ const translations = {
     tracksSelected: 'WYBRANYCH UTWORÓW',
     play: '▶ ODTWÓRZ',
     orTryWith: 'Lub spróbuj z',
-    characters: 'znaków'
+    characters: 'znaków',
+    presets: [
+      "jadę nocą, zamyślony",
+      "leniwa niedziela, pada deszcz",
+      "wieczór w Krakowie, jesienna mgła",
+      "spacer po Lizbonie, morska bryza",
+      "melancholijny wieczór"
+    ]
   },
   es: {
     tagline: 'Música para cada momento',
@@ -65,7 +86,14 @@ const translations = {
     tracksSelected: 'CANCIONES SELECCIONADAS',
     play: '▶ ESCUCHAR',
     orTryWith: 'O prueba con',
-    characters: 'caracteres'
+    characters: 'caracteres',
+    presets: [
+      "conduciendo de noche, pensativo",
+      "domingo tranquilo, llueve afuera",
+      "atardecer en Barcelona, brisa marina",
+      "caminando por Buenos Aires, tango en el aire",
+      "me siento melancólico esta noche"
+    ]
   }
 };
 
@@ -85,14 +113,6 @@ export default function Home() {
   }, []);
 
   const t = translations[lang];
-
-  const examplePrompts = [
-    "Driving at night in Krakow",
-    "Sunset aperitivo in Naples",
-    "Walking in Lisbon, light rain",
-    "Morning in Berlin, coffee and cigarette",
-    "Lazy Sunday in Buenos Aires"
-  ];
 
   const handleAnalyze = async () => {
     if (!input.trim()) return;
@@ -595,7 +615,7 @@ export default function Home() {
                 gap: '10px',
                 justifyContent: 'center'
               }}>
-                {examplePrompts.map((prompt, i) => (
+                {t.presets.map((prompt, i) => (
                   <button
                     key={i}
                     onClick={() => setInput(prompt)}
