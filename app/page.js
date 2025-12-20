@@ -64,49 +64,6 @@ export default function Home() {
     setError(null);
   };
 
-  // Componente VU Meter
-  const VUMeter = ({ value = 0, label }) => (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: '8px'
-    }}>
-      <div style={{
-        width: '60px',
-        height: '60px',
-        borderRadius: '50%',
-        background: 'linear-gradient(145deg, #1a1a1a, #0a0a0a)',
-        border: '3px solid #2a2a2a',
-        boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.8), 0 0 20px rgba(255, 170, 50, 0.1)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        position: 'relative'
-      }}>
-        <div style={{
-          width: '8px',
-          height: '8px',
-          borderRadius: '50%',
-          background: value > 50 
-            ? 'radial-gradient(circle, #ff6b35 0%, #ff4500 100%)' 
-            : 'radial-gradient(circle, #ffaa32 0%, #ff8c00 100%)',
-          boxShadow: value > 50 
-            ? '0 0 15px #ff6b35, 0 0 30px #ff4500' 
-            : '0 0 15px #ffaa32, 0 0 30px #ff8c00',
-          animation: 'glow 2s ease-in-out infinite'
-        }} />
-      </div>
-      <span style={{
-        fontSize: '9px',
-        letterSpacing: '2px',
-        textTransform: 'uppercase',
-        color: '#666',
-        fontFamily: "'Inter', monospace"
-      }}>{label}</span>
-    </div>
-  );
-
   return (
     <div style={{
       minHeight: '100vh',
@@ -116,7 +73,6 @@ export default function Home() {
       position: 'relative',
       overflow: 'hidden'
     }}>
-      {/* Grana vintage */}
       <div style={{
         position: 'fixed',
         inset: 0,
@@ -125,7 +81,6 @@ export default function Home() {
         pointerEvents: 'none'
       }} />
 
-      {/* Luce calda dall'alto */}
       <div style={{
         position: 'fixed',
         top: '-30%',
@@ -145,7 +100,6 @@ export default function Home() {
         zIndex: 1
       }}>
         
-        {/* Header - Stile amplificatore */}
         <header style={{ 
           marginBottom: '50px', 
           textAlign: 'center',
@@ -155,7 +109,6 @@ export default function Home() {
           border: '1px solid #1a1a1a',
           boxShadow: '0 10px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.03)'
         }}>
-          {/* Logo/Brand */}
           <div style={{
             fontSize: '10px',
             letterSpacing: '6px',
@@ -190,19 +143,59 @@ export default function Home() {
             Analog Music Generator
           </p>
 
-          {/* VU Meters decorativi */}
           <div style={{
             display: 'flex',
             justifyContent: 'center',
             gap: '30px',
             marginTop: '30px'
           }}>
-            <VUMeter value={30} label="L" />
-            <VUMeter value={45} label="R" />
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+              <div style={{
+                width: '60px',
+                height: '60px',
+                borderRadius: '50%',
+                background: 'linear-gradient(145deg, #1a1a1a, #0a0a0a)',
+                border: '3px solid #2a2a2a',
+                boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.8), 0 0 20px rgba(255, 170, 50, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <div style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  background: 'radial-gradient(circle, #ffaa32 0%, #ff8c00 100%)',
+                  boxShadow: '0 0 15px #ffaa32, 0 0 30px #ff8c00'
+                }} />
+              </div>
+              <span style={{ fontSize: '9px', letterSpacing: '2px', color: '#666' }}>L</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+              <div style={{
+                width: '60px',
+                height: '60px',
+                borderRadius: '50%',
+                background: 'linear-gradient(145deg, #1a1a1a, #0a0a0a)',
+                border: '3px solid #2a2a2a',
+                boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.8), 0 0 20px rgba(255, 170, 50, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <div style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  background: 'radial-gradient(circle, #ffaa32 0%, #ff8c00 100%)',
+                  boxShadow: '0 0 15px #ffaa32, 0 0 30px #ff8c00'
+                }} />
+              </div>
+              <span style={{ fontSize: '9px', letterSpacing: '2px', color: '#666' }}>R</span>
+            </div>
           </div>
         </header>
 
-        {/* Error display */}
         {error && (
           <div style={{
             background: 'rgba(255, 50, 50, 0.1)',
@@ -217,7 +210,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* Main Input Area */}
         {!result && (
           <div style={{
             background: 'linear-gradient(180deg, #0a0a0a 0%, #050505 100%)',
@@ -293,7 +285,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* Loading State */}
         {isAnalyzing && (
           <div style={{
             textAlign: 'center',
@@ -308,7 +299,6 @@ export default function Home() {
               margin: '0 auto 24px',
               borderRadius: '50%',
               background: 'radial-gradient(circle, #ffaa32 0%, #ff8c00 100%)',
-              animation: 'pulse 1.5s ease-in-out infinite',
               boxShadow: '0 0 30px rgba(255, 170, 50, 0.5)'
             }} />
             <p style={{
@@ -325,10 +315,8 @@ export default function Home() {
           </div>
         )}
 
-        {/* Results */}
         {result && (
           <div>
-            {/* Current Input Display */}
             <div style={{
               background: '#0a0a0a',
               border: '1px solid #1a1a1a',
@@ -371,15 +359,13 @@ export default function Home() {
                   letterSpacing: '2px',
                   textTransform: 'uppercase',
                   cursor: 'pointer',
-                  borderRadius: '4px',
-                  transition: 'all 0.2s ease'
+                  borderRadius: '4px'
                 }}
               >
                 ✕ RESET
               </button>
             </div>
 
-            {/* Location Info */}
             {result.interpretation && (
               <div style={{
                 background: '#0a0a0a',
@@ -424,7 +410,6 @@ export default function Home() {
               </div>
             )}
 
-            {/* Playlist */}
             <div style={{
               background: '#0a0a0a',
               border: '1px solid #1a1a1a',
@@ -451,8 +436,7 @@ export default function Home() {
                   height: '8px',
                   borderRadius: '50%',
                   background: '#ff3333',
-                  boxShadow: '0 0 10px #ff3333',
-                  animation: 'pulse 2s ease-in-out infinite'
+                  boxShadow: '0 0 10px #ff3333'
                 }} />
               </div>
               
@@ -467,11 +451,8 @@ export default function Home() {
                       gap: '16px',
                       padding: '16px 24px',
                       borderBottom: i < result.playlist.length - 1 ? '1px solid #111' : 'none',
-                      transition: 'background 0.2s ease',
                       cursor: 'pointer'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#111'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                   >
                     <span style={{
                       fontSize: '14px',
@@ -509,7 +490,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Apple Music Links */}
             <div style={{
               marginTop: '24px',
               padding: '24px',
@@ -549,8 +529,7 @@ export default function Home() {
                       fontSize: '12px',
                       textDecoration: 'none',
                       borderRadius: '20px',
-                      border: '1px solid #222',
-                      transition: 'all 0.2s ease'
+                      border: '1px solid #222'
                     }}
                   >
                     <span style={{ color: '#444', fontSize: '10px' }}>
@@ -564,7 +543,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* Example prompts */}
         {!result && !isAnalyzing && (
           <div>
             <div style={{
@@ -594,8 +572,7 @@ export default function Home() {
                     padding: '10px 16px',
                     fontSize: '13px',
                     cursor: 'pointer',
-                    borderRadius: '4px',
-                    transition: 'all 0.2s ease'
+                    borderRadius: '4px'
                   }}
                 >
                   {prompt}
@@ -605,7 +582,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* Footer */}
         <footer style={{
           marginTop: '60px',
           textAlign: 'center',
@@ -622,17 +598,6 @@ export default function Home() {
           </p>
         </footer>
       </div>
-
-      <style jsx global>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
-        }
-        @keyframes glow {
-          0%, 100% { box-shadow: 0 0 15px currentColor, 0 0 30px currentColor; }
-          50% { box-shadow: 0 0 20px currentColor, 0 0 40px currentColor; }
-        }
-      `}</style>
     </div>
   );
 }
