@@ -10,11 +10,11 @@ export default function Home() {
   const [error, setError] = useState(null);
 
   const examplePrompts = [
-    "Guido di notte a Cracovia",
-    "Aperitivo a Napoli al tramonto",
-    "Passeggiata a Lisbona, piove leggero",
-    "Mattina a Berlino, caffè e sigaretta",
-    "Domenica pigra a Buenos Aires"
+    "Driving at night in Krakow",
+    "Sunset aperitivo in Naples",
+    "Walking in Lisbon, light rain",
+    "Morning in Berlin, coffee and cigarette",
+    "Lazy Sunday in Buenos Aires"
   ];
 
   const handleAnalyze = async () => {
@@ -37,7 +37,7 @@ export default function Home() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || `Errore: ${response.status}`);
+        throw new Error(errorData.error || `Error: ${response.status}`);
       }
 
       const data = await response.json();
@@ -189,7 +189,7 @@ export default function Home() {
               letterSpacing: '3px',
               textTransform: 'uppercase'
             }}>
-              Musica per ogni momento
+              Music for every moment
             </p>
 
             {/* Linea inferiore */}
@@ -239,7 +239,7 @@ export default function Home() {
               <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Descrivi dove sei, cosa senti, cosa vedi..."
+                placeholder="Describe where you are, what you feel, what you see..."
                 disabled={isAnalyzing}
                 style={{
                   width: '100%',
@@ -270,7 +270,7 @@ export default function Home() {
                   color: '#6a655d',
                   letterSpacing: '1px'
                 }}>
-                  {input.length > 0 ? `${input.length} caratteri` : '...'}
+                  {input.length > 0 ? `${input.length} characters` : '...'}
                 </span>
                 
                 <button
@@ -290,7 +290,7 @@ export default function Home() {
                     transition: 'all 0.2s ease'
                   }}
                 >
-                  {isAnalyzing ? 'ATTENDI...' : 'GENERA'}
+                  {isAnalyzing ? 'WAIT...' : 'GENERATE'}
                 </button>
               </div>
             </div>
@@ -321,9 +321,9 @@ export default function Home() {
                 letterSpacing: '2px',
                 textTransform: 'uppercase'
               }}>
-                {phase === 'analyzing' && 'Leggo tra le righe...'}
-                {phase === 'translating' && 'Cerco le melodie...'}
-                {phase === 'generating' && 'Compongo la playlist...'}
+                {phase === 'analyzing' && 'Reading between the lines...'}
+                {phase === 'translating' && 'Finding the right melodies...'}
+                {phase === 'generating' && 'Composing your playlist...'}
               </p>
             </div>
           )}
@@ -367,7 +367,7 @@ export default function Home() {
                     fontFamily: "'Courier Prime', monospace"
                   }}
                 >
-                  NUOVO
+                  NEW
                 </button>
               </div>
 
@@ -393,7 +393,7 @@ export default function Home() {
                           marginBottom: '8px', 
                           letterSpacing: '2px', 
                           textTransform: 'uppercase' 
-                        }}>LUOGO</div>
+                        }}>LOCATION</div>
                         <div style={{ 
                           fontFamily: "'Anton', sans-serif",
                           fontSize: '22px', 
@@ -431,7 +431,7 @@ export default function Home() {
                           marginBottom: '8px', 
                           letterSpacing: '2px', 
                           textTransform: 'uppercase' 
-                        }}>REGIONE</div>
+                        }}>REGION</div>
                         <div style={{ 
                           fontFamily: "'Anton', sans-serif",
                           fontSize: '22px', 
@@ -464,7 +464,7 @@ export default function Home() {
                     letterSpacing: '3px',
                     textTransform: 'uppercase'
                   }}>
-                    {result.playlist?.length || 0} BRANI SELEZIONATI
+                    {result.playlist?.length || 0} TRACKS SELECTED
                   </p>
                 </div>
                 
@@ -535,7 +535,7 @@ export default function Home() {
                   letterSpacing: '2px',
                   textTransform: 'uppercase'
                 }}>
-                  Ascolta su Apple Music
+                  Listen on Apple Music
                 </p>
                 <div style={{
                   display: 'flex',
@@ -544,7 +544,7 @@ export default function Home() {
                   justifyContent: 'center'
                 }}>
                   {result.playlist?.map((track, i) => (
-                    <a
+                    
                       key={i}
                       href={`https://music.apple.com/search?term=${encodeURIComponent(track.artist + ' ' + track.title)}`}
                       target="_blank"
@@ -580,7 +580,7 @@ export default function Home() {
                 letterSpacing: '2px',
                 textTransform: 'uppercase'
               }}>
-                Oppure prova con
+                Or try with
               </p>
               <div style={{
                 display: 'flex',
