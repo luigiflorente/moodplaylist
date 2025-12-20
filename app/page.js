@@ -121,7 +121,7 @@ export default function Home() {
   };
 
   return (
-    <React.Fragment>
+    <>
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Anton&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap');
       `}</style>
@@ -731,6 +731,6 @@ export default function Home() {
           </footer>
         </div>
       </div>
-    </React.Fragment>
+    </>
   );
 }
