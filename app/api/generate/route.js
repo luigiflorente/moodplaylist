@@ -236,25 +236,63 @@ SOUNDSCAPE: ${contextInfo.soundscape}
 Use these artists (mix of local and international that FIT the vibe):
 ${artistList}
 
-CRITICAL RULES:
-1. Use ONLY the artist's MOST FAMOUS tracks - the ones everyone knows
-2. Write titles EXACTLY as they appear on Spotify (check spelling!)
-3. Examples of CORRECT famous tracks:
-   - Portishead: "Glory Box", "Sour Times", "Wandering Star"
-   - Radiohead: "Creep", "Karma Police", "No Surprises", "Everything In Its Right Place"
-   - Nils Frahm: "Says", "Re", "All Melody"
-   - Max Richter: "On the Nature of Daylight", "Spring 1", "Dream 3"
-   - Yann Tiersen: "Comptine d'un autre été, l'après-midi", "La Valse d'Amélie"
-   - GoGo Penguin: "Raven", "Hopopono", "Murmuration"
-   - Bohren & Der Club of Gore: "Midnight Black Earth", "Constant Fear"
-   - Molchat Doma: "Sudno", "Volny", "Discoteque"
-4. DO NOT invent track names - use only tracks you're CERTAIN exist
-5. Suggest 40 tracks
+CRITICAL: At least 50% of tracks must be from LOCAL artists of the identified location!
+
+VERIFIED TRACKS DATABASE - USE THESE EXACT TITLES:
+
+POLISH ARTISTS:
+- Tomasz Stańko: "Suspended Variation VI", "Tale", "Etiuda Baletowa", "Litania", "Sleep Safe and Warm", "Dark Eyes"
+- Marcin Wasilewski Trio: "January", "Night Train to You", "Sudovian Dance", "Glimmer of Hope", "Three Reflections", "Austin"
+- Kroke: "Ajde Jano", "The Secrets of the Life Tree", "Out of Sight", "Time", "Eden", "Quartet"
+- Zbigniew Preisner: "Lacrimosa", "Van den Budenmayer: Concerto en mi mineur", "Requiem for My Friend", "Song for the Unification of Europe"
+- Henryk Górecki: "Symphony No. 3, Op. 36: II. Lento e largo"
+- Wojciech Kilar: "Exodus", "Polonez", "Bram Stoker's Dracula"
+- Krzysztof Penderecki: "Threnody for the Victims of Hiroshima", "Polymorphia"
+- Leszek Możdżer: "Komeda", "Preludium"
+- Skalpel: "1958", "Break In", "Sculpture"
+
+EASTERN EUROPEAN:
+- Molchat Doma: "Sudno (Boris Ryzhy)", "Volny", "Toska", "Discoteque", "Na Dne"
+- Motorama: "Heavy Wave", "Alps", "Ghost", "Calendar"
+
+NAPLES/SOUTHERN ITALY:
+- Pino Daniele: "Napule è", "Quando", "Je so' pazzo", "Nero a metà", "Yes I Know My Way"
+- James Senese: "Je te vurria vasà"
+- Nu Genea: "Marechià", "Bar Mediterraneo", "Nuova Napoli"
+- Napoli Centrale: "Campagna", "Ngazzate Nire"
+- Enzo Avitabile: "Soul Express", "Black Tarantella"
+
+LISBON/PORTUGAL:
+- Amália Rodrigues: "Estranha Forma de Vida", "Com Que Voz", "Povo Que Lavas No Rio"
+- Madredeus: "O Pastor", "Ainda", "O Mar"
+- Ana Moura: "Desfado", "Leva-me aos Fados"
+- Mísia: "Paixão", "Ruas"
+- Mariza: "Chuva", "Há Festa na Mouraria"
+
+INTERNATIONAL (use for mood matching):
+- Portishead: "Glory Box", "Sour Times", "Wandering Star", "Roads", "The Rip"
+- Radiohead: "Everything In Its Right Place", "Exit Music (For a Film)", "How to Disappear Completely", "Pyramid Song", "No Surprises"
+- Massive Attack: "Teardrop", "Angel", "Unfinished Sympathy", "Protection"
+- Bohren & Der Club of Gore: "Constant Fear", "Prowler", "Midnight Black Earth", "On Demon Wings"
+- Nils Frahm: "Says", "Re", "All Melody", "My Friend the Forest"
+- Max Richter: "On the Nature of Daylight", "Spring 1", "Written on the Sky", "Dream 3"
+- Agnes Obel: "Riverside", "Familiar", "The Curse", "Aventine"
+- Bonobo: "Black Sands", "Kong", "Kerala", "Cirrus"
+- GoGo Penguin: "Raven", "Hopopono", "Murmuration", "Garden Dog Barbecue"
+- Kiasmos: "Blurred", "Thrown", "Gaunt"
+- Ólafur Arnalds: "Near Light", "Saman", "Nyepi"
+- Thom Yorke: "Suspirium", "Unmade", "Dawn Chorus"
+
+RULES:
+1. Use ONLY tracks from the database above - do not invent titles!
+2. At least 50% must be LOCAL artists from the identified location
+3. Suggest 50 tracks total
+4. Write artist and title EXACTLY as shown above
 
 Respond ONLY with JSON:
 {
   "suggestedTracks": [
-    {"title": "EXACT Spotify title", "artist": "EXACT Spotify artist"}
+    {"title": "EXACT title from database", "artist": "EXACT artist name"}
   ]
 }`
           }
@@ -278,7 +316,7 @@ Respond ONLY with JSON:
     
     for (const track of tracksInfo.suggestedTracks || []) {
       if (verifiedTracks.length >= 17) break;
-      if (checkedCount >= 40) break;
+      if (checkedCount >= 50) break;
       
       checkedCount++;
       
