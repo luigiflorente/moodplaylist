@@ -1,10 +1,19 @@
 export async function POST(request) {
   try {
-    const { prompt } = await request.json();
+    const { prompt, language = 'en' } = await request.json();
 
     if (!prompt) {
       return Response.json({ error: 'Prompt mancante' }, { status: 400 });
     }
+
+    const languageNames = {
+      en: 'English',
+      it: 'Italian',
+      pl: 'Polish',
+      es: 'Spanish'
+    };
+
+    const responseLang = languageNames[language] || 'English';
 
     const currentHour = new Date().getHours();
     let timeContext = 'daytime';
@@ -30,6 +39,8 @@ export async function POST(request) {
 
 User request: "${prompt}"
 Current time: ${timeContext}
+
+IMPORTANT: Respond in ${responseLang}. The location, atmosphere, and mood fields must be written in ${responseLang}.
 
 YOUR TASK: Create the PERFECT playlist for this moment. Think like someone who LIVES this experience.
 
