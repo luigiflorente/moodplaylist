@@ -16,6 +16,7 @@ const translations = {
     mood: 'MOOD',
     tracksSelected: 'TRACKS SELECTED',
     play: '▶ PLAY',
+    saveToSpotify: 'SAVE TO SPOTIFY',
     orTryWith: 'Or try with',
     characters: 'characters',
     presets: [
@@ -39,6 +40,7 @@ const translations = {
     mood: 'MOOD',
     tracksSelected: 'BRANI SELEZIONATI',
     play: '▶ ASCOLTA',
+    saveToSpotify: 'SALVA SU SPOTIFY',
     orTryWith: 'Oppure prova con',
     characters: 'caratteri',
     presets: [
@@ -62,6 +64,7 @@ const translations = {
     mood: 'NASTRÓJ',
     tracksSelected: 'WYBRANYCH UTWORÓW',
     play: '▶ ODTWÓRZ',
+    saveToSpotify: 'ZAPISZ NA SPOTIFY',
     orTryWith: 'Lub spróbuj z',
     characters: 'znaków',
     presets: [
@@ -85,6 +88,7 @@ const translations = {
     mood: 'MOOD',
     tracksSelected: 'CANCIONES SELECCIONADAS',
     play: '▶ ESCUCHAR',
+    saveToSpotify: 'GUARDAR EN SPOTIFY',
     orTryWith: 'O prueba con',
     characters: 'caracteres',
     presets: [
@@ -161,8 +165,21 @@ export default function Home() {
     setError(null);
   };
 
-  const getYouTubeLink = (artist, title) => {
-    return `https://www.youtube.com/results?search_query=${encodeURIComponent(artist + ' ' + title)}`;
+  const handleSaveToSpotify = () => {
+    const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID || '1e0ad01046184e3f90a64bbcef9e2f53';
+    const redirectUri = window.location.origin + '/callback';
+    const scopes = 'playlist-modify-public playlist-modify-private';
+    
+    // Store playlist data in localStorage to retrieve after OAuth
+    localStorage.setItem('pendingPlaylist', JSON.stringify({
+      name: `${result.interpretation.location} - Mood Playlist`,
+      description: result.interpretation.atmosphere,
+      tracks: result.playlist.map(t => t.spotifyId)
+    }));
+    
+    const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}`;
+    
+    window.location.href = authUrl;
   };
 
   return (
@@ -515,7 +532,8 @@ export default function Home() {
               <div style={{
                 background: 'rgba(255, 252, 245, 0.4)',
                 border: '2px solid #2a2420',
-                overflow: 'hidden'
+                overflow: 'hidden',
+                marginBottom: '20px'
               }}>
                 <div style={{
                   padding: '20px 30px',
@@ -538,7 +556,7 @@ export default function Home() {
                   {result.playlist?.map((track, i) => (
                     <a
                       key={i}
-                      href={getYouTubeLink(track.artist, track.title)}
+                      href={track.spotifyUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{
@@ -584,7 +602,7 @@ export default function Home() {
                       <span style={{
                         fontFamily: "'Courier Prime', monospace",
                         fontSize: '11px',
-                        color: '#FF0000',
+                        color: '#1DB954',
                         fontWeight: 700
                       }}>
                         {t.play}
@@ -593,6 +611,28 @@ export default function Home() {
                   ))}
                 </div>
               </div>
+
+              <button
+                onClick={handleSaveToSpotify}
+                style={{
+                  width: '100%',
+                  background: '#1DB954',
+                  border: '2px solid #1DB954',
+                  color: '#fff',
+                  padding: '18px 30px',
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  letterSpacing: '3px',
+                  textTransform: 'uppercase',
+                  cursor: 'pointer',
+                  fontFamily: "'Courier Prime', monospace",
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = '#1ed760'}
+                onMouseLeave={(e) => e.currentTarget.style.background = '#1DB954'}
+              >
+                {t.saveToSpotify}
+              </button>
             </div>
           )}
 
