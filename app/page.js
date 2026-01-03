@@ -166,8 +166,14 @@ export default function Home() {
   };
 
   const handleSaveToSpotify = () => {
-    const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID || '1e0ad01046184e3f90a64bbcef9e2f53';
-    const redirectUri = window.location.origin + '/callback';
+    const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID;
+    
+    if (!clientId) {
+      alert('Spotify Client ID not configured');
+      return;
+    }
+    
+    const redirectUri = window.location.origin + '/api/spotify-callback';
     const scopes = 'playlist-modify-public playlist-modify-private';
     
     // Store playlist data in localStorage to retrieve after OAuth
