@@ -1,3 +1,42 @@
+async function getSpotifyToken() {
+  const response = await fetch('https://accounts.spotify.com/api/token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Authorization': 'Basic ' + Buffer.from(
+        process.env.SPOTIFY_CLIENT_ID + ':' + process.env.SPOTIFY_CLIENT_SECRET
+      ).toString('base64')
+    },
+    body: 'grant_type=client_credentials'
+  });
+  
+  const data = await response.json();
+  return data.access_token;
+}
+
+async function searchSpotify(token, artist, title) {
+  const query = encodeURIComponent(`track:${title} artist:${artist}`);
+  const response = await fetch(
+    `https://api.spotify.com/v1/search?q=${query}&type=track&limit=1`,
+    {
+      headers: { 'Authorization': `Bearer ${token}` }
+    }
+  );
+  
+  const data = await response.json();
+  if (data.tracks?.items?.length > 0) {
+    const track = data.tracks.items[0];
+    return {
+      title: track.name,
+      artist: track.artists[0].name,
+      spotifyId: track.id,
+      spotifyUrl: track.external_urls.spotify,
+      year: track.album.release_date?.substring(0, 4) || 'N/A'
+    };
+  }
+  return null;
+}
+
 export async function POST(request) {
   try {
     const { prompt, language = 'en' } = await request.json();
@@ -75,12 +114,13 @@ LISBON RAIN:
 - Melancholic international: Portishead, Chet Baker
 
 RULES:
-1. Create EXACTLY 15 tracks
-2. At least 60% should be LOCAL artists from the identified place/culture
-3. Choose REAL, FAMOUS songs that definitely exist
-4. Match the MOOD perfectly - every song should feel right
-5. Mix eras: classics and contemporary
-6. Think about the FLOW - how songs connect to each other
+1. Create EXACTLY 25 tracks (we will verify on Spotify and keep only those that exist)
+2. At least 60% should be from LOCAL artists of the identified place/culture
+3. Choose REAL, FAMOUS songs that definitely exist on Spotify
+4. Be VERY PRECISE with artist names and song titles - use exact Spotify spelling
+5. Match the MOOD perfectly - every song should feel right
+6. Mix eras: classics and contemporary
+7. Think about the FLOW - how songs connect to each other
 
 Respond ONLY with this JSON structure:
 {
@@ -89,10 +129,9 @@ Respond ONLY with this JSON structure:
   "mood": "2-3 words capturing the mood",
   "playlist": [
     {
-      "title": "song title",
-      "artist": "artist name",
-      "year": "release year or approximate decade",
-      "why": "one short sentence why this fits"
+      "title": "exact song title as on Spotify",
+      "artist": "exact artist name as on Spotify",
+      "year": "release year"
     }
   ]
 }`
@@ -106,10 +145,40 @@ Respond ONLY with this JSON structure:
     const cleanContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     const result = JSON.parse(cleanContent);
 
-    console.log('=== PLAYLIST GENERATED ===');
+    console.log('=== CLAUDE GENERATED ===');
     console.log('Location:', result.location);
     console.log('Mood:', result.mood);
-    console.log('Tracks:', result.playlist?.length);
+    console.log('Total suggested:', result.playlist?.length);
+
+    // Verify tracks on Spotify
+    const spotifyToken = await getSpotifyToken();
+    const verifiedPlaylist = [];
+    let notFound = 0;
+
+    for (const track of result.playlist || []) {
+      const spotifyTrack = await searchSpotify(spotifyToken, track.artist, track.title);
+      
+      if (spotifyTrack) {
+        verifiedPlaylist.push({
+          title: spotifyTrack.title,
+          artist: spotifyTrack.artist,
+          year: spotifyTrack.year,
+          spotifyId: spotifyTrack.spotifyId,
+          spotifyUrl: spotifyTrack.spotifyUrl
+        });
+        console.log(`✓ Found: ${spotifyTrack.title} - ${spotifyTrack.artist}`);
+      } else {
+        console.log(`✗ Not found: ${track.title} - ${track.artist}`);
+        notFound++;
+      }
+
+      // Stop at 15 verified tracks
+      if (verifiedPlaylist.length >= 15) break;
+    }
+
+    console.log('=== VERIFICATION COMPLETE ===');
+    console.log('Verified tracks:', verifiedPlaylist.length);
+    console.log('Not found:', notFound);
 
     return Response.json({
       interpretation: {
@@ -117,7 +186,7 @@ Respond ONLY with this JSON structure:
         mood: result.mood,
         atmosphere: result.atmosphere
       },
-      playlist: result.playlist
+      playlist: verifiedPlaylist
     });
 
   } catch (error) {
